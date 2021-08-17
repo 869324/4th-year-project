@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.SignUp"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="103dp"
+        android:background="@color/primaryColor"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:background="@drawable/ic_wave"
+        app:layout_constraintTop_toBottomOf="@id/view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="300dp"
+            android:layout_height="150dp"
+            android:background="@color/primaryColor"
+            android:contentDescription="person"
+            app:srcCompat="@drawable/ic_person"
+            tools:ignore="VectorDrawableCompat"
+            tools:layout_editor_absoluteX="100dp"
+            tools:layout_editor_absoluteY="27dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="90dp"
+            android:hint="@string/reg_no"
+            android:text="@string/SignUp"
+            android:textColor="@color/textColor"
+            android:textSize="24sp"
+            app:layout_constraintTop_toBottomOf="@id/view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tvError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/red"/>
+
+    <EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="50dp"
+        android:autofillHints=""
+        android:background="@drawable/et_round_border"
+        android:drawableStart="@drawable/ic_reg"
+        android:drawableLeft="@drawable/ic_reg"
+        android:ems="10"
+        android:hint="Email ...@students.dkut.ac.ke"
+        android:inputType="textEmailAddress"
+        android:padding="10dp"
+        android:shadowColor="@color/black"
+        android:textColor="@color/textColor"
+        android:textColorHighlight="@color/primaryColor"
+        android:textColorHint="@color/textHintColor"
+        android:textColorLink="@color/purple_700" />
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginHorizontal="50dp"
+            android:layout_marginTop="10dp"
+            android:autofillHints=""
+            android:background="@drawable/et_round_border"
+            android:drawableStart="@drawable/ic_lock"
+            android:drawableLeft="@drawable/ic_reg"
+            android:ems="10"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:padding="10dp"
+            android:textColor="@color/textColor"
+            android:textColorHighlight="@color/primaryColor"
+            android:textColorHint="@color/textHintColor"
+            android:textColorLink="@color/purple_700"/>
+
+        <ImageButton
+            android:id="@+id/showPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/etPassword"
+            android:layout_alignBottom="@+id/etPassword"
+            android:layout_alignRight="@+id/etPassword"
+            android:src="@drawable/ic_eye"
+            android:layout_centerVertical="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_margin="5dp" />
+    </RelativeLayout>
+
+
+
+    <Button
+        android:id="@+id/btnSignUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/et_round_border"
+        android:text="@string/SignUp"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:backgroundTint="@color/primaryColor"
+         />
+
+    <TextView
+        android:id="@+id/back"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/back_to_login"
+        android:textColor="@color/textHintColor"
+        android:textSize="18sp"
+        android:gravity="center_horizontal"/>
+
+</LinearLayout>

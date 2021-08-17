@@ -1,0 +1,98 @@
+<resources>
+    <string name="app_name">Dekut Chat</string>
+    <string name="login">Login</string>
+    <string name="reg_no">Reg NO</string>
+    <string name="Password">Password</string>
+    <string name="SignUp">SignUp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="back_to_login">Back to Login</string>
+
+    <string-array name="courses">
+        <item>Select Course</item>
+        <item>Bed technology (civil engineering) </item>
+        <item>Bed technology (EEE, electrical and electronics engineering)</item>
+        <item>Bed technology (mechanical engineering)</item>
+        <item>Bsc civil engineering</item>
+        <item>Bsc mechatronic engineering</item>
+        <item>Bsc mechanical engineering</item>
+        <item>Bsc electrical and electronic engineering</item>
+        <item>Bsc chemical engineering</item>
+        <item>Bsc nursing (direct entry)</item>
+        <item>Bsc nursing (upgrading)</item>
+        <item>Bsc actuarial science</item>
+        <item>Bsc industrial chemistry</item>
+        <item>Bsc leather technology</item>
+        <item>Bsc computer science</item>
+        <item>Bsc Business Information Technology (BBIT)</item>
+        <item>Bsc Information Technology (IT)</item>
+        <item>Bsc Geomatics and Geospatial Information Systems</item>
+        <item>Bsc Geospatial Information Science and Remote Sensing</item>
+        <item>Bsc Geological Sciences and Technology</item>
+        <item>Bsc Food Science and Technology</item>
+        <item>Bsc Nutrition and Dietetics</item>
+        <item>Bsc Sustainable Tourism and Hospitality Management</item>
+        <item>Bachelor of Purchasing and Supplies Management (BPSM)</item>
+        <item>Bachelor of Commerce (BCom)</item>
+        <item>Bachelor of Business Administration (BBA)</item>
+        <item>Bachelor of Science in Criminology and Security Management</item>
+        <item>Bachelor of Technology in Building Construction</item>
+        <item>PhD in Business Administration</item>
+        <item>PhD Mechanical Engineering</item>
+        <item>PhD in Geospatial Information Systems and Remote Sensing</item>
+        <item>PhD in Food Science and Technology</item>
+        <item>Master of Business Administration</item>
+        <item>Master of Science in Supply Chain Management</item>
+        <item>Master of Science in Economics</item>
+        <item>Master of Science in Advanced Manufacturing and Automation Engineering</item>
+        <item>Master of Science in Industrial Engineering and Management</item>
+        <item>Master of Science in Geospatial Information Systems and Remote Sensing</item>
+        <item>Master of Science in Food Science and Technology</item>
+        <item>Master of Science in Leather Technology</item>
+        <item>Master of Science in Forensics and Security Management</item>
+        <item>Master of Science in Mechanical Engineering</item>
+        <item>Master of Science in Industrial Mathematics</item>
+        <item>Master of Science in Industrial Laser Technology and Photonics</item>
+        <item>Master of Science in Telecommunication Engineering</item>
+        <item>Master of Science in Chemistry</item>
+        <item>Master of Science in Geothermal Energy Technology</item>
+        <item>Post Graduate Diploma in Geothermal Energy Technology</item>
+        <item>Diploma in Information Technology</item>
+        <item>Diploma in Leather Technology</item>
+        <item>Diploma in Security Management</item>
+        <item>Diploma in Business Administration (DBA)</item>
+        <item>Diploma of Purchasing and Supplies Management (DPSM)</item>
+        <item>Diploma in Sustainable Tourism and Hospitality Management</item>
+        <item>Diploma in Food Science and Technology</item>
+        <item>Diploma in Coffee Technology and Cupping</item>
+        <item>Diploma in Furniture Technology and Interior design</item>
+        <item>Diploma in Metal work, Welding and Design</item>
+        <item>Diploma in Building Technology</item>
+        <item>Diploma in Fashion Design and Interior Decoration</item>
+        <item>Diploma in Electrical and Electronics Engineering (Power Option)</item>
+        <item>Certificate in Leather Technology</item>
+        <item>Certificate in Information Technology</item>
+        <item>Certificate in Coffee Technology and Quality Management</item>
+        <item>Certificate in Building Technology</item>
+        <item>Certificate in Fashion Design and Interior Decoration</item>
+        <item>Certificate in Electrical and Electronics Engineering (Power Option)</item>
+        <item>Certificate in Metal work, Welding and Design</item>
+        <item>Certificate in Furniture Technology and Interior design</item>
+        <item>Certificate in German Language</item>
+        <item>Mountaineering and Outdoor Expeditions Guiding</item>
+        <item>CCNA I, II,III ,IV</item>
+        <item>Certificate in Accounting and Management skills (CAM)</item>
+        <item>ATD Level I,II, III</item>
+        <item>CPA Sec. I-VI</item>
+        <item>Associate in Procurement and Supply of Kenya (APS-K)</item>
+        <item>Certified Procurement and Supply Professional of Kenya (CPSP-K)</item>
+        <item>Siemens Mechatronics Systems Certification Program (SMSCP) LEVELS 1-3</item>
+    </string-array>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+
+</resources>

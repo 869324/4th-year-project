@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1016350165628",
+    "project_id": "dekutchat",
+    "storage_bucket": "dekutchat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016350165628:android:6ced8d007710857f6f97f9",
+        "android_client_info": {
+          "package_name": "com.example.dekutchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016350165628-46rmvaeu1d4invk3u5i0nod2pdo3rk4l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMqseFEyexRpo3BsTkSrTLytHsQmMGX64"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016350165628-46rmvaeu1d4invk3u5i0nod2pdo3rk4l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

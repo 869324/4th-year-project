@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.CreateProfile"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:id="@+id/tvTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Finish up your profile to continue"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="100dp"
+        android:layout_marginTop="20dp"
+        app:cardElevation="5dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+
+        <ImageView
+            android:id="@+id/profilePic"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_person3"
+            android:contentDescription="pic"
+            android:scaleType="centerCrop"
+            tools:ignore="VectorDrawableCompat" />
+
+    </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/btnEditPic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:drawableTop="@drawable/ic_baseline_image_24"
+        android:background="@android:color/transparent"
+        android:text="Edit Picture"
+        android:textColor="@color/textHintColor" />
+
+
+    <EditText
+        android:id="@+id/etRegNo"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="20dp"
+        android:autofillHints=""
+        android:background="@drawable/et_round_border"
+        android:drawableLeft="@drawable/ic_reg"
+        android:ems="10"
+        android:hint="Reg NO"
+        android:inputType="textCapSentences|textPersonName"
+        android:padding="10dp"
+        android:textColor="@color/textColor"
+        android:textColorHighlight="@color/primaryColor"
+        android:textColorHint="@color/textHintColor"
+        android:textColorLink="@color/purple_700" />
+
+    <EditText
+        android:id="@+id/etUsername"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="20dp"
+        android:autofillHints=""
+        android:background="@drawable/et_round_border"
+        android:drawableLeft="@drawable/ic_reg"
+        android:ems="10"
+        android:hint="Username"
+        android:inputType="textCapSentences|textPersonName"
+        android:padding="10dp"
+        android:textColor="@color/textColor"
+        android:textColorHighlight="@color/primaryColor"
+        android:textColorHint="@color/textHintColor"
+        android:textColorLink="@color/purple_700"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="50dp"
+        android:background="@drawable/et_round_border"
+        app:layout_constraintTop_toBottomOf="@id/etUsername">
+
+        <com.toptoche.searchablespinnerlibrary.SearchableSpinner
+            android:id="@+id/searchSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"/>
+
+    </LinearLayout>
+
+
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Save"
+        android:backgroundTint="@color/primaryColor"/>
+
+</LinearLayout>

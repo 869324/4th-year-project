@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.CreateGroup">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/picCard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardElevation="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        app:cardCornerRadius="100dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/ic_person3"
+            android:scaleType="centerCrop"/>
+
+    </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/btnEditGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit Group"
+        android:textColor="@color/textColor"
+        android:backgroundTint="@color/almostWhite"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/picCard"
+        app:layout_constraintBottom_toBottomOf="@id/picCard"
+        app:layout_constraintLeft_toRightOf="@id/picCard"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/btnEditPic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:src="@drawable/ic_baseline_image_24"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="@id/picCard"
+        app:layout_constraintRight_toRightOf="@id/picCard"
+        app:layout_constraintTop_toBottomOf="@id/picCard"/>
+
+    <TextView
+        android:id="@+id/tvType1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:text="Group Type: "
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/textColor"
+        app:layout_constraintTop_toBottomOf="@id/btnEditPic"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/tvType2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:textSize="16sp"
+        android:textColor="@color/textColor"
+        app:layout_constraintTop_toTopOf="@id/tvType1"
+        app:layout_constraintLeft_toRightOf="@id/tvType1" />
+
+    <ImageButton
+        android:id="@+id/btnEditType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_edit"
+        android:background="?attr/selectableItemBackground"
+        android:visibility="gone"
+        app:layout_constraintLeft_toRightOf="@id/tvType2"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvType1"/>
+
+    <TextView
+        android:id="@+id/tvName1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:text="Group Name: "
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/textColor"
+        app:layout_constraintTop_toBottomOf="@id/tvType1"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/tvName2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:textSize="16sp"
+        android:textColor="@color/textColor"
+        app:layout_constraintTop_toTopOf="@id/tvName1"
+        app:layout_constraintLeft_toRightOf="@id/tvName1" />
+
+    <ImageButton
+        android:id="@+id/btnEditName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_edit"
+        android:background="?attr/selectableItemBackground"
+        android:visibility="gone"
+        app:layout_constraintLeft_toRightOf="@id/tvName2"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvName1"/>
+
+    <TextView
+        android:id="@+id/tvDescription1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:text="Description: "
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/textColor"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvName1"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/tvDescription2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:textSize="16sp"
+        android:textColor="@color/textColor"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/tvDescription1"
+        app:layout_constraintLeft_toRightOf="@id/tvDescription1" />
+
+    <TextView
+        android:id="@+id/tvMembers1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Members"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:textColor="@color/textColor"
+        app:layout_constraintTop_toBottomOf="@id/tvDescription1"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvMembers2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/textColor"
+        app:layout_constraintTop_toTopOf="@id/tvMembers1"
+        app:layout_constraintLeft_toRightOf="@id/tvMembers1"/>
+
+
+    <ImageButton
+        android:id="@+id/btnEditDesc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_edit"
+        android:background="?attr/selectableItemBackground"
+        android:visibility="gone"
+        app:layout_constraintLeft_toRightOf="@id/tvDescription2"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvDescription1"/>
+
+    <Button
+        android:id="@+id/btnOperation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Join"
+        android:layout_marginTop="5dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvMembers1"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/membersRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="5dp"
+        app:layout_constraintTop_toBottomOf="@id/btnOperation"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
