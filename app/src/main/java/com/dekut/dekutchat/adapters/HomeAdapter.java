@@ -9,8 +9,10 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -25,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -33,6 +38,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.activities.Comments;
 import com.dekut.dekutchat.activities.CreateHomePost;
+import com.dekut.dekutchat.activities.Login;
+import com.dekut.dekutchat.activities.SignUp;
 import com.dekut.dekutchat.activities.UserChat;
 import com.dekut.dekutchat.activities.ViewProfile;
 import com.dekut.dekutchat.activities.ViewVideo;
@@ -45,6 +52,8 @@ import com.dekut.dekutchat.activities.ViewImage;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -53,8 +62,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -67,6 +79,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 public class HomeAdapter extends RecyclerView.Adapter{
     List<HomePost> posts;
@@ -347,8 +361,9 @@ public class HomeAdapter extends RecyclerView.Adapter{
                     btnShare.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            if (homePost.getImageUrl() != null && homePost.getVideoUrl() == null) {
-                                Uri bmpUri = getLocalBitmapUri(postImage);
+                            Uri bmpUri = getLocalBitmapUri(postImage);
+
+                            if (homePost.getVideoUrl() == null) {
                                 Intent shareIntent = new Intent();
                                 shareIntent.setType("image/*");
                                 shareIntent.setAction(Intent.ACTION_SEND);
@@ -359,7 +374,13 @@ public class HomeAdapter extends RecyclerView.Adapter{
                                 }
 
                                 context.startActivity(Intent.createChooser(shareIntent, "Share Image"));
+
                             }
+
+                            else {
+                                showDialog(homePost, view);
+                            }
+
                         }
                     });
 
@@ -397,6 +418,10 @@ public class HomeAdapter extends RecyclerView.Adapter{
             btnComment = itemView.findViewById(R.id.btnComment);
             btnShare = itemView.findViewById(R.id.btnShare);
             menu = itemView.findViewById(R.id.menu);
+
+            if (context instanceof Comments){
+                btnComment.setEnabled(false);
+            }
         }
         
         public void bind(HomePost homePost){
@@ -630,6 +655,71 @@ public class HomeAdapter extends RecyclerView.Adapter{
             e.printStackTrace();
         }
         return bmpUri;
+    }
+
+    public void showDialog(HomePost homePost, View view){
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.share_video_popup, null);
+        int width = LinearLayout.LayoutParams.MATCH_PARENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+        popupWindow.setElevation(10);
+        popupWindow.setTouchable(true);
+        popupWindow.setFocusable(false);
+        popupWindow.setOutsideTouchable(false);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+        ProgressBar progressBar = popupView.findViewById(R.id.progressBar);
+        Button btnCancel = popupView.findViewById(R.id.btnCancel);
+        TextView tvProgress = popupView.findViewById(R.id.tvProgress);
+
+        tvProgress.setText("0%");
+
+        StorageReference reference = firebaseStorage.getReferenceFromUrl(homePost.getVideoUrl());
+        try {
+            File localFile = createImageFile();
+            reference.getFile(localFile).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(@NonNull FileDownloadTask.TaskSnapshot snapshot) {
+                    double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                    int currentProgress = (int) progress;
+                    progressBar.setProgress(currentProgress);
+                    tvProgress.setText(String.valueOf(currentProgress) + "%");
+                }
+            }).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Uri uri = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                            ? FileProvider.getUriForFile(context, "com.example.android.fileprovider", localFile)
+                            : Uri.fromFile(localFile);
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("video/mp4");
+                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                    if (homePost.getText() != null){
+                        intent.putExtra(Intent.EXTRA_TEXT, homePost.getText());
+                    }
+                    context.startActivity(intent);
+                    popupWindow.dismiss();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle any errors
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for (FileDownloadTask task : reference.getActiveDownloadTasks()){
+                    task.cancel();
+                    popupWindow.dismiss();
+                }
+            }
+        });
     }
 
 }

@@ -118,7 +118,8 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(new Intent(MainActivity.this, Login.class));
                     finish();
                 } else if (id == R.id.nav_exit) {
-
+                    finishAffinity();
+                    System.exit(0);
                 }
                 drawer.closeDrawer(GravityCompat.START);
                 menuItem.setChecked(false);
