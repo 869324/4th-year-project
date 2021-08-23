@@ -5,7 +5,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,11 +26,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.activities.Comments;
+import com.dekut.dekutchat.activities.CreateHomePost;
 import com.dekut.dekutchat.activities.UserChat;
 import com.dekut.dekutchat.activities.ViewProfile;
 import com.dekut.dekutchat.activities.ViewVideo;
@@ -51,6 +58,12 @@ import com.google.firebase.storage.StorageReference;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -160,7 +173,7 @@ public class HomeAdapter extends RecyclerView.Adapter{
             postImageCard = itemView.findViewById(R.id.postImageCard);
             menu = itemView.findViewById(R.id.menu);
 
-            if (context.equals(Comments.class)){
+            if (context instanceof Comments){
                 btnComment.setEnabled(false);
             }
 
@@ -331,6 +344,25 @@ public class HomeAdapter extends RecyclerView.Adapter{
                         }
                     });
 
+                    btnShare.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (homePost.getImageUrl() != null && homePost.getVideoUrl() == null) {
+                                Uri bmpUri = getLocalBitmapUri(postImage);
+                                Intent shareIntent = new Intent();
+                                shareIntent.setType("image/*");
+                                shareIntent.setAction(Intent.ACTION_SEND);
+                                shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
+
+                                if (homePost.getText() != null) {
+                                    shareIntent.putExtra(Intent.EXTRA_TEXT, homePost.getText());
+                                }
+
+                                context.startActivity(Intent.createChooser(shareIntent, "Share Image"));
+                            }
+                        }
+                    });
+
                     if (edit){
                         menu.setVisibility(View.VISIBLE);
                         menu.setOnClickListener(new View.OnClickListener() {
@@ -492,6 +524,17 @@ public class HomeAdapter extends RecyclerView.Adapter{
                         }
                     });
 
+                    btnShare.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent shareIntent = new Intent();
+                            shareIntent.setAction(Intent.ACTION_SEND);
+                            shareIntent.setType("text/plain");
+                            shareIntent.putExtra(Intent.EXTRA_TEXT, homePost.getText());
+                            context.startActivity(Intent.createChooser(shareIntent, "Share Text"));
+                        }
+                    });
+
                     if (edit){
                         menu.setVisibility(View.VISIBLE);
                         menu.setOnClickListener(new View.OnClickListener() {
@@ -557,6 +600,36 @@ public class HomeAdapter extends RecyclerView.Adapter{
             }
         });
         builder.show();
+    }
+
+    public File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File file = File.createTempFile(
+                imageFileName,
+                ".jpg",
+                storageDir
+        );
+
+        return file;
+    }
+
+    public Uri getLocalBitmapUri(ImageView imageView) {
+        Bitmap bmp = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        Uri bmpUri = null;
+        try {
+            File file =  createImageFile();
+            file.getParentFile().mkdirs();
+            FileOutputStream out = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+            bmpUri = FileProvider.getUriForFile(context, "com.example.android.fileprovider", file);
+            //bmpUri = Uri.fromFile(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bmpUri;
     }
 
 }
