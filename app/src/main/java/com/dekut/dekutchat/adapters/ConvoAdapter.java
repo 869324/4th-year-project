@@ -263,22 +263,22 @@ public class ConvoAdapter extends RecyclerView.Adapter{
     }
 
     public class SentMediaViewHolder extends RecyclerView.ViewHolder {
-        TextView tvText, tvTime, tvDate, tvName;
+        TextView tvText, tvTime, tvDate, tvName, tvSize;
         ImageView imageView, tick1, tick2;
-        ProgressBar progressBar;
         CardView playCard;
-        ImageButton btnPlay;
+        ImageButton btnPlay, btnDownload;
 
         public SentMediaViewHolder(@NonNull View itemView) {
             super(itemView);
             tvText = itemView.findViewById(R.id.tvText);
             tvTime = itemView.findViewById(R.id.tvTime);
             tvName = itemView.findViewById(R.id.tvName);
+            tvSize = itemView.findViewById(R.id.tvSize);
             tvDate= itemView.findViewById(R.id.tvDate);
             tick1 = itemView.findViewById(R.id.tick1);
             tick2 = itemView.findViewById(R.id.tick2);
             imageView = itemView.findViewById(R.id.imageView);
-            progressBar = itemView.findViewById(R.id.progressBar);
+            btnDownload = itemView.findViewById(R.id.btnDownload);
             playCard = itemView.findViewById(R.id.playCard);
             btnPlay = itemView.findViewById(R.id.btnPlay);
         }
@@ -320,7 +320,6 @@ public class ConvoAdapter extends RecyclerView.Adapter{
 
             if (message.getMessageType().equals("image")){
                 playCard.setVisibility(View.INVISIBLE);
-                progressBar.setVisibility(View.INVISIBLE);
                 Glide.with(context)
                         .load(message.getImageUrl())
                         .into(imageView);
@@ -328,7 +327,6 @@ public class ConvoAdapter extends RecyclerView.Adapter{
 
             if (message.getMessageType().equals("video")){
                 playCard.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.INVISIBLE);
                 Glide.with(context)
                         .load(message.getImageUrl())
                         .into(imageView);
@@ -336,7 +334,7 @@ public class ConvoAdapter extends RecyclerView.Adapter{
 
             if (message.getMessageType().equals("file")){
                 playCard.setVisibility(View.INVISIBLE);
-                progressBar.setVisibility(View.INVISIBLE);
+                btnDownload.setVisibility(View.VISIBLE);
                 imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_file));
             }
 
@@ -383,10 +381,9 @@ public class ConvoAdapter extends RecyclerView.Adapter{
 
     public class ReceivedMediaViewHolder extends RecyclerView.ViewHolder {
         ImageView profilePic;
-        TextView tvText, tvTime, tvDate, tvName;
+        TextView tvText, tvTime, tvDate, tvName, tvSize;
         ImageView imageView, tick1, tick2;
-        ProgressBar progressBar;
-        ImageButton btnPlay;
+        ImageButton btnPlay, btnDownload;
         CardView playCard;
 
         public ReceivedMediaViewHolder(@NonNull View itemView) {
@@ -394,12 +391,13 @@ public class ConvoAdapter extends RecyclerView.Adapter{
             tvText = itemView.findViewById(R.id.tvText);
             profilePic = itemView.findViewById(R.id.profilePic);
             tvTime = itemView.findViewById(R.id.tvTime);
+            tvSize = itemView.findViewById(R.id.tvSize);
             tvName = itemView.findViewById(R.id.tvName);
             tvDate= itemView.findViewById(R.id.tvDate);
             tick1 = itemView.findViewById(R.id.tick1);
             tick2 = itemView.findViewById(R.id.tick2);
             imageView = itemView.findViewById(R.id.imageView);
-            progressBar = itemView.findViewById(R.id.progressBar);
+            btnDownload = itemView.findViewById(R.id.btnDownload);
             playCard = itemView.findViewById(R.id.playCard);
             btnPlay = itemView.findViewById(R.id.btnPlay);
         }
@@ -438,7 +436,6 @@ public class ConvoAdapter extends RecyclerView.Adapter{
 
             if (message.getMessageType().equals("image")){
                 playCard.setVisibility(View.INVISIBLE);
-                progressBar.setVisibility(View.INVISIBLE);
                 Glide.with(context)
                         .load(message.getImageUrl())
                         .into(imageView);
@@ -446,7 +443,6 @@ public class ConvoAdapter extends RecyclerView.Adapter{
 
             if (message.getMessageType().equals("video")){
                 playCard.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.INVISIBLE);
                 Glide.with(context)
                         .load(message.getImageUrl())
                         .into(imageView);
@@ -454,7 +450,7 @@ public class ConvoAdapter extends RecyclerView.Adapter{
 
             if (message.getMessageType().equals("file")){
                 playCard.setVisibility(View.INVISIBLE);
-                progressBar.setVisibility(View.INVISIBLE);
+                btnDownload.setVisibility(View.VISIBLE);
                 imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_file));
             }
 

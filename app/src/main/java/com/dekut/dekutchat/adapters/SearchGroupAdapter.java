@@ -18,10 +18,12 @@ import com.dekut.dekutchat.utils.Group;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
-public class SearchGroupAdapter extends FirebaseRecyclerAdapter<Group, SearchGroupAdapter.ViewHolder> {
-
+public class SearchGroupAdapter extends RecyclerView.Adapter<SearchGroupAdapter.ViewHolder> {
+    List<Group> groups;
     Context context;
     String email;
 
@@ -29,10 +31,10 @@ public class SearchGroupAdapter extends FirebaseRecyclerAdapter<Group, SearchGro
      * Initialize a {@link RecyclerView.Adapter} that listens to a Firebase query. See
      * {@link FirebaseRecyclerOptions} for configuration options.
      *
-     * @param options
+     * @param 
      */
-    public SearchGroupAdapter(@NonNull FirebaseRecyclerOptions<Group> options, Context context, String email) {
-        super(options);
+    public SearchGroupAdapter(List<Group> groups, Context context, String email) {
+        this.groups = groups;
         this.context = context;
         this.email = email;
     }
@@ -48,14 +50,17 @@ public class SearchGroupAdapter extends FirebaseRecyclerAdapter<Group, SearchGro
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull Group model) {
+    public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
+        Group group = groups.get(position);
 
-        holder.tvGroupName.setText(model.getName());
+        holder.tvGroupName.setText(group.getName());
         Glide.with(context)
-                .load(model.getImageUrl())
+                .load(group.getImageUrl())
                 .into(holder.avatar);
 
-        model.getMembersCount(new Group.SimpleCallback<Long>() {
+        holder.tvDescription.setText(group.getDescription());
+
+        group.getMembersCount(new Group.SimpleCallback<Long>() {
             @Override
             public void callback(Long num) {
                 holder.membersCount.setText(String.valueOf(num));
@@ -67,7 +72,7 @@ public class SearchGroupAdapter extends FirebaseRecyclerAdapter<Group, SearchGro
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, com.dekut.dekutchat.activities.ViewGroup.class);
-                intent.putExtra("guid", model.getGroupId());
+                intent.putExtra("guid", group.getGroupId());
                 context.startActivity(intent);
             }
         });
@@ -76,18 +81,25 @@ public class SearchGroupAdapter extends FirebaseRecyclerAdapter<Group, SearchGro
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, ViewImage.class);
-                intent.putExtra("url", model.getImageUrl());
+                intent.putExtra("url", group.getImageUrl());
                 context.startActivity(intent);
             }
         });
     }
 
+    @Override
+    public int getItemCount() {
+        return groups.size();
+    }
+    
+
     public class ViewHolder extends RecyclerView.ViewHolder{
-        TextView tvGroupName, membersCount;
+        TextView tvGroupName, membersCount, tvDescription;
         ImageView avatar;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvGroupName = itemView.findViewById(R.id.tvGroupName);
+            tvDescription = itemView.findViewById(R.id.tvDescription);
             membersCount = itemView.findViewById(R.id.membersCount);
             avatar = itemView.findViewById(R.id.avatar);
         }
