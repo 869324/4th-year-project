@@ -40,6 +40,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,10 +76,14 @@ public class Groups extends Fragment {
     GroupChatAdapter groupChatAdapter;
     SearchGroupAdapter searchGroupAdapter;
     Context context;
-    FirebaseRecyclerOptions<Group> groupOptions;
-    FirebaseRecyclerOptions<com.dekut.dekutchat.utils.Conversation> conversationOptions;
+    List<Group> groups = new ArrayList<>();
+    String key = null;
+    String keyword = null;
+    Query groupQuery;
+    boolean isLoading = false;
     List<Conversation> conversations = new ArrayList<>();
     List<String> keys = new ArrayList<>();
+    List<String> groupKeys = new ArrayList<>();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -156,18 +163,52 @@ public class Groups extends Fragment {
                 newGroup = popupView.findViewById(R.id.newGroup);
                 newGroup.setVisibility(View.VISIBLE);
 
-                fetchGroups("");
+                linearLayoutManager2 = new LinearLayoutManager(context);
+                groupRecyclerView.setLayoutManager(linearLayoutManager2);
+                searchGroupAdapter = new SearchGroupAdapter(groups, context, email);
+                searchGroupAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+                searchUserProgressBar.setVisibility(View.INVISIBLE);
+                groupRecyclerView.setAdapter(searchGroupAdapter);
+
+                fetchGroups();
+
+                groupRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+                        LinearLayoutManager linearLayoutManager1 = (LinearLayoutManager) recyclerView.getLayoutManager();
+                        int lastPosition = linearLayoutManager1.findLastCompletelyVisibleItemPosition();
+                        int totalItems = linearLayoutManager1.getItemCount();
+
+                        if ((totalItems -  lastPosition) < 3){
+                            if (!isLoading) {
+                                isLoading = true;
+                                fetchGroups();
+                            }
+                        }
+                    }
+                });
 
                 groupSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
                     public boolean onQueryTextSubmit(String query) {
-                        fetchGroups(query);
+                        keyword = query.toLowerCase();
+                        key = null;
+                        groups.clear();
+                        groupKeys.clear();
+                        searchGroupAdapter.notifyDataSetChanged();
+                        fetchGroups();
                         return true;
                     }
 
                     @Override
                     public boolean onQueryTextChange(String newText) {
-                        fetchGroups(newText);
+                        keyword = newText.toLowerCase();
+                        key = null;
+                        groups.clear();
+                        groupKeys.clear();
+                        searchGroupAdapter.notifyDataSetChanged();
+                        fetchGroups();
                         return true;
                     }
                 });
@@ -202,23 +243,60 @@ public class Groups extends Fragment {
         super.onPause();
     }
 
-    public void fetchGroups(String keyword){
-        Query query = firebaseDatabase.getReference().child("groups").orderByChild("type").equalTo("public");
-        groupOptions = new FirebaseRecyclerOptions.Builder<Group>().setQuery(query, Group.class).build();
-        linearLayoutManager2 = new LinearLayoutManager(context);
-        groupRecyclerView.setLayoutManager(linearLayoutManager2);
-        searchGroupAdapter = new SearchGroupAdapter(groupOptions, context, email);
-        searchGroupAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
-        searchUserProgressBar.setVisibility(View.INVISIBLE);
-        groupRecyclerView.setAdapter(searchGroupAdapter);
-        searchGroupAdapter.startListening();
+    public void fetchGroups(){
+        if (key == null) {
+            groupQuery = firebaseDatabase.getReference().child("groups").orderByKey().limitToFirst(100);
+        }
+
+        else {
+            groupQuery = firebaseDatabase.getReference().child("groups").orderByKey().limitToFirst(100).startAt(key);
+        }
+
+        groupQuery.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        Group group = snap.getValue(Group.class);
+
+                        if (group.getType().equals("public") && !groupKeys.contains(group.getGroupId())) {
+                            if (keyword == null) {
+                                groups.add(group);
+                                groupKeys.add(group.getGroupId());
+                                searchGroupAdapter.notifyItemInserted(groups.size() - 1);
+                            }
+
+                            else {
+                                String name = group.getName().toLowerCase();
+                                String description = group.getDescription().toLowerCase();
+
+                                if (name.contains(keyword) || description.contains(keyword)) {
+                                    groups.add(group);
+                                    groupKeys.add(group.getGroupId());
+                                    searchGroupAdapter.notifyItemInserted(groups.size() - 1);
+                                }
+                            }
+                        }
+                        key = group.getGroupId();
+                    }
+
+                    if (groups.isEmpty()){
+                        fetchGroups();
+                    }
+                    isLoading = false;
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
     }
 
     public void fetchChats(){
-        if (!conversations.isEmpty()){
-            progressBar.setVisibility(View.INVISIBLE);
-        }
-
         Query query = firebaseDatabase.getReference().child("groupConversations").orderByChild("lastMessage");
         query.addChildEventListener(new ChildEventListener() {
             @Override
@@ -234,7 +312,6 @@ public class Groups extends Fragment {
                                     if (!keys.contains(conversation.getConvoId())) {
                                         conversations.add(conversation);
                                         keys.add(conversation.getConvoId());
-                                        progressBar.setVisibility(View.INVISIBLE);
                                         groupChatAdapter.notifyItemInserted(conversations.size() - 1);
                                     }
                                 }
@@ -248,17 +325,36 @@ public class Groups extends Fragment {
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 Conversation conversation = snapshot.getValue(Conversation.class);
-                for (Conversation conversation1 : conversations) {
-                    if (conversation.getConvoId().equals(conversation1.getConvoId())) {
-                        int index = conversations.indexOf(conversation1);
-                        conversations.remove(index);
-                        groupChatAdapter.notifyItemRemoved(index);
-                        conversations.add(conversation);
-                        groupChatAdapter.notifyItemInserted(conversations.size() - 1);
-                        progressBar.setVisibility(View.INVISIBLE);
-                        break;
+                conversation.getGroup(new Conversation.SimpleCallback<Group>() {
+                    @Override
+                    public void callback(Group group) {
+                        group.isJoined(new Group.SimpleCallback<Boolean>() {
+                            @Override
+                            public void callback(Boolean isJoined) {
+                                if (isJoined) {
+                                    for (Conversation conversation1 : conversations) {
+                                        if (conversation.getConvoId().equals(conversation1.getConvoId())) {
+                                            int index = conversations.indexOf(conversation1);
+                                            conversations.remove(index);
+                                            groupChatAdapter.notifyItemRemoved(index);
+                                            conversations.add(conversation);
+                                            groupChatAdapter.notifyItemInserted(conversations.size() - 1);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                else {
+                                    int index = conversations.indexOf(conversation);
+                                    conversations.remove(index);
+                                    groupChatAdapter.notifyItemRemoved(index);
+                                }
+                            }
+                        });
+
                     }
-                }
+                });
+
             }
 
             @Override
@@ -271,7 +367,6 @@ public class Groups extends Fragment {
                         conversations.remove(index);
                         keys.remove(index2);
                         groupChatAdapter.notifyItemRemoved(index);
-                        progressBar.setVisibility(View.INVISIBLE);
                         break;
                     }
                 }

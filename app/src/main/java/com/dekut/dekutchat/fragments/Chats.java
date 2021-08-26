@@ -253,10 +253,6 @@ public class Chats extends Fragment {
     }
 
     public void fetchChats(){
-        if (!conversations.isEmpty()){
-            mainProgressBar.setVisibility(View.GONE);
-        }
-
         Query query = firebaseDatabase.getReference().child("conversations").orderByChild("lastMessage");
         query.addChildEventListener(new ChildEventListener() {
             @Override
@@ -264,7 +260,6 @@ public class Chats extends Fragment {
                 Conversation conversation = snapshot.getValue(Conversation.class);
                 if(!keys.contains(conversation.getConvoId())) {
                     if (conversation.getConvoId().replace("_", ".").contains(email)) {
-                        mainProgressBar.setVisibility(View.INVISIBLE);
                         conversations.add(conversation);
                         keys.add(conversation.getConvoId());
                         chatAdapter.notifyItemInserted(conversations.size() - 1);

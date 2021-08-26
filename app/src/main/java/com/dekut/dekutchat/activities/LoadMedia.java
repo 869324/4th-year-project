@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.view.View;
@@ -122,7 +123,6 @@ public class LoadMedia extends AppCompatActivity {
             public void onClick(View view) {
                 btnSend.setEnabled(false);
                 text = etText.getText().toString();
-
 
                 progressDialog = new ProgressDialog(LoadMedia.this);
                 progressDialog.show();
@@ -247,8 +247,6 @@ public class LoadMedia extends AppCompatActivity {
                     });
                 }
 
-
-
                 btnSend.setEnabled(true);
             }
 
@@ -349,26 +347,43 @@ public class LoadMedia extends AppCompatActivity {
 
                 }
             });
+        }
 
+        else {
+            uploadData(message);
         }
     }
 
     public void uploadData(Map<String, Object> message){
-        DatabaseReference reference = firebaseDatabase.getReference().child("conversations").child(convoId).child("messages");
+        DatabaseReference reference;
+        if (receiverType.equals("user")) {
+            reference = firebaseDatabase.getReference().child("conversations").child(convoId).child("messages");
+        }
+        else {
+            reference = firebaseDatabase.getReference().child("groupConversations").child(convoId).child("messages");
+        }
+
         DatabaseReference keyRef = reference.push();
         String key = keyRef.getKey();
         message.put("id", key);
         keyRef.setValue(message).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull @NotNull Task<Void> task) {
-                Query query = firebaseDatabase.getReference().child("conversations").child(convoId).child("messages").orderByKey().equalTo(key);
+                Query query = reference.orderByKey().equalTo(key);
                 query.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         for (DataSnapshot snap : snapshot.getChildren()) {
                             Message message1 = snap.getValue(Message.class);
                             long timestamp = message1.getSentAt();
-                            DatabaseReference reference1 = firebaseDatabase.getReference().child("conversations").child(convoId).child("lastMessage");
+
+                            DatabaseReference reference1;
+                            if (receiverType.equals("user")) {
+                                reference1 = firebaseDatabase.getReference().child("conversations").child(convoId).child("lastMessage");
+                            }
+                            else {
+                                reference1 = firebaseDatabase.getReference().child("groupConversations").child(convoId).child("lastMessage");
+                            }
                             reference1.setValue(timestamp);
                             onBackPressed();
                             break;
