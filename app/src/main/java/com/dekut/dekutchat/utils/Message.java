@@ -209,7 +209,7 @@ public class Message {
 
     public void addLastRead(String email){
         DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(convoId).child("members").child(email.replace(".", "_"));
-        reference.child("lastRead").setValue(sentAt);
+        reference.child("lastRead").setValue(ServerValue.TIMESTAMP);
     }
 
     public void addReadListener(@NonNull SimpleCallback<Long> finishedCallback){

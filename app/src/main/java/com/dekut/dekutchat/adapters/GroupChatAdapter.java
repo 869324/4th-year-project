@@ -3,6 +3,7 @@ package com.dekut.dekutchat.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -115,6 +116,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                                             int count = 0;
                                             for (DataSnapshot snap : snapshot.getChildren()){
                                                 Message message = snap.getValue(Message.class);
+                                                //Log.e("myTag", lastRead + " " + message.getSentAt());
                                                 if(message.getSentAt() > lastRead && !message.getSenderId().equals(email)){
                                                     count += 1;
                                                 }

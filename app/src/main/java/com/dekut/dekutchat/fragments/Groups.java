@@ -297,8 +297,40 @@ public class Groups extends Fragment {
     }
 
     public void fetchChats(){
-        Query query = firebaseDatabase.getReference().child("groupConversations").orderByChild("lastMessage");
-        query.addChildEventListener(new ChildEventListener() {
+        Query query = firebaseDatabase.getReference().child("groupConversations").orderByChild("lastMessageT");
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                for (DataSnapshot snap : snapshot.getChildren()){
+                    Conversation conversation = snap.getValue(Conversation.class);
+                    Log.e("myTag", conversation.toString());
+                    conversation.getGroup(new Conversation.SimpleCallback<Group>() {
+                        @Override
+                        public void callback(Group group) {
+                            group.isJoined(new Group.SimpleCallback<Boolean>() {
+                                @Override
+                                public void callback(Boolean isJoined) {
+                                    if (isJoined) {
+                                        if (!keys.contains(conversation.getConvoId())) {
+                                            conversations.add(conversation);
+                                            keys.add(conversation.getConvoId());
+                                            groupChatAdapter.notifyItemInserted(conversations.size() - 1);
+                                        }
+                                    }
+                                }
+                            });
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+        /*query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 Conversation conversation = snapshot.getValue(Conversation.class);
@@ -381,7 +413,7 @@ public class Groups extends Fragment {
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
-        });
+        });*/
     }
 
 }

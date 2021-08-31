@@ -27,6 +27,7 @@ import com.dekut.dekutchat.utils.GetTime;
 import com.dekut.dekutchat.utils.Message;
 import com.dekut.dekutchat.utils.Student;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -250,8 +251,8 @@ public class GroupConvoAdapter extends RecyclerView.Adapter {
 
             tvText.setText(message.getText());
             tvTime.setText(time);
-            message.addReadAt();
-
+            message.addGroupReadAt();
+            message.addLastRead(email);
         }
     }
 
@@ -459,7 +460,8 @@ public class GroupConvoAdapter extends RecyclerView.Adapter {
 
             tvText.setText(message.getText());
             tvTime.setText(time);
-            message.addReadAt();
+            message.addGroupReadAt();
+            message.addLastRead(email);
 
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override

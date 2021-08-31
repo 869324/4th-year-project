@@ -15,6 +15,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class Conversation {
     String  convoId, user1, user2;
+    long lastMessageT;
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     Message lastMessage;
     Group group;
@@ -45,6 +46,14 @@ public class Conversation {
 
     public void setUser2(String user2) {
         this.user2 = user2;
+    }
+
+    public long getLastMessageT() {
+        return lastMessageT;
+    }
+
+    public void setLastMessageT(long lastMessageT) {
+        this.lastMessageT = lastMessageT;
     }
 
     public void getConversationWith(@NonNull SimpleCallback<Student> finishedCallback){
