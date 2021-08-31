@@ -22,8 +22,11 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.R;
+import com.dekut.dekutchat.adapters.ChatAdapter;
 import com.dekut.dekutchat.adapters.GroupMembersAdapter;
+import com.dekut.dekutchat.adapters.SearchUserAdapter;
 import com.dekut.dekutchat.utils.Group;
+import com.dekut.dekutchat.utils.Student;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,6 +37,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +56,10 @@ public class ViewGroup extends AppCompatActivity {
     LinearLayoutManager linearLayoutManager;
     String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+    List<Student> members = new ArrayList<>();
+    List<String> keys = new ArrayList<>();
     Group group;
+    SearchUserAdapter userAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +94,22 @@ public class ViewGroup extends AppCompatActivity {
                         public void callback(Boolean isJoined) {
                             if(isJoined){
                                 btnOperation.setText("Leave Group");
+                                membersRecyclerView.setVisibility(View.VISIBLE);
+
+                                linearLayoutManager = new LinearLayoutManager(ViewGroup.this);
+                                //linearLayoutManager.setReverseLayout(true);
+                                //linearLayoutManager.setStackFromEnd(true);
+                                membersRecyclerView.setLayoutManager(linearLayoutManager);
+                                userAdapter = new SearchUserAdapter(members, ViewGroup.this);
+                                userAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+                                membersRecyclerView.setAdapter(userAdapter);
+
+                                fetchMembers();
                             }
                             else {
                                 btnOperation.setText("Join Group");
+                                btnEditGroup.setVisibility(View.INVISIBLE);
+                                membersRecyclerView.setVisibility(View.INVISIBLE);
                             }
 
                             Glide.with(getApplicationContext())
@@ -182,29 +204,24 @@ public class ViewGroup extends AppCompatActivity {
 
                                     }
                                     else {
-                                        Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByChild("id").equalTo(email);
-                                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+                                        group.isAdmin(new Group.SimpleCallback<Boolean>() {
                                             @Override
-                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                for(DataSnapshot snap : snapshot.getChildren()){
-                                                    String key = snap.getKey();
-                                                    DatabaseReference reference = query.getRef().child(key);
-                                                    reference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if(task.isSuccessful()){
-                                                                Toast.makeText(getApplicationContext(), "You have left the Group", Toast.LENGTH_LONG).show();
-                                                            }
+                                            public void callback(Boolean isAdmin) {
+                                                group.getAdminCount(new Group.SimpleCallback<Long>() {
+                                                    @Override
+                                                    public void callback(Long adminCount) {
+                                                        if (isAdmin && adminCount < 2){
+                                                            Toast.makeText(ViewGroup.this, "You cannot leave the Group because you are the only admin!", Toast.LENGTH_LONG).show();
                                                         }
-                                                    });
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                        else {
+                                                            leaveGroup();
+                                                        }
+                                                    }
+                                                });
 
                                             }
                                         });
+
                                     }
                                 }
                             });
@@ -224,6 +241,101 @@ public class ViewGroup extends AppCompatActivity {
                         }
                     });
                     break;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    public void fetchMembers(){
+        Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                for (DataSnapshot snap : snapshot.getChildren()){
+                    String id = snap.child("id").getValue().toString();
+                    Query query1 = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(id);
+                    query1.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                            for (DataSnapshot snap : snapshot.getChildren()){
+                                Student student = snap.getValue(Student.class);
+                                if (!keys.contains(student.getEmail()) && !student.getEmail().equals(email)){
+                                    members.add(student);
+                                    keys.add(student.getEmail());
+                                    userAdapter.notifyItemInserted(members.size() - 1);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    public void leaveGroup (){
+        Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByChild("id").equalTo(email);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot snap : snapshot.getChildren()){
+                    String key = snap.getKey();
+                    DatabaseReference reference = query.getRef().child(key);
+                    reference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if(task.isSuccessful()){
+                                group.isAdmin(new Group.SimpleCallback<Boolean>() {
+                                    @Override
+                                    public void callback(Boolean isAdmin) {
+                                        if (isAdmin){
+                                            Query query1 = firebaseDatabase.getReference().child("groups").child(groupId).child("admins").orderByChild("id").equalTo(email);
+                                            query1.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                    for(DataSnapshot snap : snapshot.getChildren()){
+                                                        String key = snap.getKey();
+                                                        DatabaseReference reference = query1.getRef().child(key);
+                                                        reference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                if(task.isSuccessful()){
+                                                                    Toast.makeText(getApplicationContext(), "You have left the Group", Toast.LENGTH_LONG).show();
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            Toast.makeText(getApplicationContext(), "You have left the Group", Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                });
+
+                            }
+                        }
+                    });
                 }
             }
 

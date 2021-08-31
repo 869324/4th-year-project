@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.R;
 import com.dekut.dekutchat.activities.UserChat;
 import com.dekut.dekutchat.activities.ViewImage;
+import com.dekut.dekutchat.activities.ViewProfile;
 import com.dekut.dekutchat.utils.HomePost;
 import com.dekut.dekutchat.utils.Student;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -34,6 +35,11 @@ public class SearchUserAdapter extends RecyclerView.Adapter<SearchUserAdapter.Vi
         this.students = students;
         this.context = context;
         this.popupWindow = popupWindow;
+    }
+
+    public SearchUserAdapter(List<Student> students, Context context){
+        this.students = students;
+        this.context = context;
     }
 
 
@@ -73,12 +79,21 @@ public class SearchUserAdapter extends RecyclerView.Adapter<SearchUserAdapter.Vi
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, UserChat.class);
-                intent.putExtra("email", email);
-                intent.putExtra("name", username);
-                intent.putExtra("url", picUrl);
-                popupWindow.dismiss();
-                context.startActivity(intent);
+                if (popupWindow != null) {
+                    Intent intent = new Intent(context, UserChat.class);
+                    intent.putExtra("email", email);
+                    intent.putExtra("name", username);
+                    intent.putExtra("url", picUrl);
+                    context.startActivity(intent);
+                    popupWindow.dismiss();
+                }
+
+                else {
+                    Intent intent = new Intent(context, ViewProfile.class);
+                    intent.putExtra("profileEmail", email);
+                    context.startActivity(intent);
+                }
+
             }
         });
     }

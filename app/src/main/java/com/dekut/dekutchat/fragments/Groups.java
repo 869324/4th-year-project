@@ -79,7 +79,7 @@ public class Groups extends Fragment {
     List<Group> groups = new ArrayList<>();
     String key = null;
     String keyword = null;
-    Query groupQuery;
+    Query groupQuery, query;
     boolean isLoading = false;
     List<Conversation> conversations = new ArrayList<>();
     List<String> keys = new ArrayList<>();
@@ -297,40 +297,8 @@ public class Groups extends Fragment {
     }
 
     public void fetchChats(){
-        Query query = firebaseDatabase.getReference().child("groupConversations").orderByChild("lastMessageT");
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    Conversation conversation = snap.getValue(Conversation.class);
-                    Log.e("myTag", conversation.toString());
-                    conversation.getGroup(new Conversation.SimpleCallback<Group>() {
-                        @Override
-                        public void callback(Group group) {
-                            group.isJoined(new Group.SimpleCallback<Boolean>() {
-                                @Override
-                                public void callback(Boolean isJoined) {
-                                    if (isJoined) {
-                                        if (!keys.contains(conversation.getConvoId())) {
-                                            conversations.add(conversation);
-                                            keys.add(conversation.getConvoId());
-                                            groupChatAdapter.notifyItemInserted(conversations.size() - 1);
-                                        }
-                                    }
-                                }
-                            });
-
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-            }
-        });
-        /*query.addChildEventListener(new ChildEventListener() {
+        query = firebaseDatabase.getReference().child("groupConversations").orderByChild("lastMessageT");
+        query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 Conversation conversation = snapshot.getValue(Conversation.class);
@@ -345,10 +313,28 @@ public class Groups extends Fragment {
                                         conversations.add(conversation);
                                         keys.add(conversation.getConvoId());
                                         groupChatAdapter.notifyItemInserted(conversations.size() - 1);
+
+                                        Query query1 = firebaseDatabase.getReference().child("groups").child(group.getGroupId()).child("members").orderByChild("id").equalTo(email);
+                                        query1.addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                                if (!snapshot.exists()){
+                                                    int index = conversations.indexOf(conversation);
+                                                    conversations.remove(index);
+                                                    groupChatAdapter.notifyItemRemoved(index);
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                                            }
+                                        });
                                     }
                                 }
                             }
                         });
+
 
                     }
                 });
@@ -366,21 +352,26 @@ public class Groups extends Fragment {
                                 if (isJoined) {
                                     for (Conversation conversation1 : conversations) {
                                         if (conversation.getConvoId().equals(conversation1.getConvoId())) {
-                                            int index = conversations.indexOf(conversation1);
-                                            conversations.remove(index);
-                                            groupChatAdapter.notifyItemRemoved(index);
-                                            conversations.add(conversation);
-                                            groupChatAdapter.notifyItemInserted(conversations.size() - 1);
-                                            break;
+                                            if (conversation.getLastMessageT() > conversation1.getLastMessageT()) {
+                                                int index = conversations.indexOf(conversation1);
+                                                conversations.remove(index);
+                                                groupChatAdapter.notifyItemRemoved(index);
+                                                conversations.add(conversation);
+                                                groupChatAdapter.notifyItemInserted(conversations.size() - 1);
+                                                break;
+                                            }
+
+                                            else {
+                                                int index = conversations.indexOf(conversation1);
+                                                conversations.remove(index);
+                                                conversations.add(index, conversation);
+                                                groupChatAdapter.notifyItemChanged(index);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
 
-                                else {
-                                    int index = conversations.indexOf(conversation);
-                                    conversations.remove(index);
-                                    groupChatAdapter.notifyItemRemoved(index);
-                                }
                             }
                         });
 
@@ -413,7 +404,6 @@ public class Groups extends Fragment {
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
-        });*/
+        });
     }
-
 }

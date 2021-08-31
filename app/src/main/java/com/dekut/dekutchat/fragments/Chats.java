@@ -272,12 +272,22 @@ public class Chats extends Fragment {
                 Conversation conversation = snapshot.getValue(Conversation.class);
                 for(Conversation conversation1 : conversations){
                     if(conversation.getConvoId().equals(conversation1.getConvoId())){
-                        int index = conversations.indexOf(conversation1);
-                        conversations.remove(index);
-                        chatAdapter.notifyItemRemoved(index);
-                        conversations.add(conversation);
-                        chatAdapter.notifyItemInserted(conversations.size() - 1);
-                        break;
+                        if (conversation.getLastMessageT() > conversation1.getLastMessageT()) {
+                            int index = conversations.indexOf(conversation1);
+                            conversations.remove(index);
+                            chatAdapter.notifyItemRemoved(index);
+                            conversations.add(conversation);
+                            chatAdapter.notifyItemInserted(conversations.size() - 1);
+                            break;
+                        }
+
+                        else {
+                            int index = conversations.indexOf(conversation1);
+                            conversations.remove(index);
+                            conversations.add(index, conversation);
+                            chatAdapter.notifyItemChanged(index);
+                            break;
+                        }
                     }
                 }
 
