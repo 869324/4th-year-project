@@ -143,6 +143,26 @@ public class Group {
         });
     }
 
+    public void getAdminCount(@NonNull SimpleCallback<Long> finishedCallback){
+        Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("admins");
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long num = 0;
+                if(snapshot.exists()){
+                    num = snapshot.getChildrenCount();
+                }
+
+                finishedCallback.callback(num);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     public interface SimpleCallback<T>{
         void callback(T data);
     }

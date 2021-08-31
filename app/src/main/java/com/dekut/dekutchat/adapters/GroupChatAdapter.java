@@ -116,7 +116,6 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                                             int count = 0;
                                             for (DataSnapshot snap : snapshot.getChildren()){
                                                 Message message = snap.getValue(Message.class);
-                                                //Log.e("myTag", lastRead + " " + message.getSentAt());
                                                 if(message.getSentAt() > lastRead && !message.getSenderId().equals(email)){
                                                     count += 1;
                                                 }

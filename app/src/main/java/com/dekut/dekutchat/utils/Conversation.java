@@ -121,8 +121,8 @@ public class Conversation {
     }
 
     public void getGroupLastRead(@NonNull SimpleCallback<Long> finishedCallback){
-        DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(convoId).child("members").child(userEmail.replace(".", "_"));
-        reference.addValueEventListener(new ValueEventListener() {
+        Query query = firebaseDatabase.getReference().child("groups").child(convoId).child("members").orderByChild("id").equalTo(userEmail);
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
