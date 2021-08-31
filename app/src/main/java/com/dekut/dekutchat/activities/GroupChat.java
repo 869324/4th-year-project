@@ -423,7 +423,7 @@ public class GroupChat extends AppCompatActivity {
                         public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                             Message message1 = snapshot.getValue(Message.class);
                             long timestamp = message1.getSentAt();
-                            DatabaseReference reference1 = firebaseDatabase.getReference().child("groupConversations").child(groupId).child("lastMessage");
+                            DatabaseReference reference1 = firebaseDatabase.getReference().child("groupConversations").child(groupId).child("lastMessageT");
                             reference1.setValue(timestamp);
                         }
 

@@ -253,7 +253,7 @@ public class Chats extends Fragment {
     }
 
     public void fetchChats(){
-        Query query = firebaseDatabase.getReference().child("conversations").orderByChild("lastMessage");
+        Query query = firebaseDatabase.getReference().child("conversations").orderByChild("lastMessageT");
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
