@@ -84,6 +84,7 @@ public class Groups extends Fragment {
     List<Conversation> conversations = new ArrayList<>();
     List<String> keys = new ArrayList<>();
     List<String> groupKeys = new ArrayList<>();
+    List<String> order = new ArrayList<>();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -302,40 +303,33 @@ public class Groups extends Fragment {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 Conversation conversation = snapshot.getValue(Conversation.class);
-                conversation.getGroup(new Conversation.SimpleCallback<Group>() {
+                conversation.isEligible(new Conversation.SimpleCallback<Boolean>() {
                     @Override
-                    public void callback(Group group) {
-                        group.isJoined(new Group.SimpleCallback<Boolean>() {
-                            @Override
-                            public void callback(Boolean isJoined) {
-                                if (isJoined) {
-                                    if (!keys.contains(conversation.getConvoId())) {
-                                        conversations.add(conversation);
-                                        keys.add(conversation.getConvoId());
-                                        groupChatAdapter.notifyItemInserted(conversations.size() - 1);
+                    public void callback(Boolean isEligible) {
+                        if (isEligible && !keys.contains(conversation.getConvoId())){
 
-                                        Query query1 = firebaseDatabase.getReference().child("groups").child(group.getGroupId()).child("members").orderByChild("id").equalTo(email);
-                                        query1.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                                if (!snapshot.exists()){
-                                                    int index = conversations.indexOf(conversation);
-                                                    conversations.remove(index);
-                                                    groupChatAdapter.notifyItemRemoved(index);
-                                                }
-                                            }
+                                conversations.add( conversation);
+                                keys.add(conversation.getConvoId());
+                                groupChatAdapter.notifyItemInserted(conversations.size() - 1);
 
-                                            @Override
-                                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                                            }
-                                        });
+                                /*Query query1 = firebaseDatabase.getReference().child("groups").child(group.getGroupId()).child("members").orderByChild("id").equalTo(email);
+                                query1.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                        if (!snapshot.exists()){
+                                            int index = conversations.indexOf(conversation);
+                                            conversations.remove(index);
+                                            groupChatAdapter.notifyItemRemoved(index);
+                                        }
                                     }
-                                }
-                            }
-                        });
 
+                                    @Override
+                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
+                                    }
+                                });*/
+
+                        }
                     }
                 });
             }

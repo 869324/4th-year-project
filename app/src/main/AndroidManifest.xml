@@ -15,7 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.DekutChat">
-        <activity android:name=".activities.CreatePoll"></activity>
+        <activity android:name=".activities.EditGroup"></activity>
+        <activity android:name=".activities.CreatePoll" />
         <activity
             android:name=".activities.Comments"
             android:windowSoftInputMode="adjustPan" />

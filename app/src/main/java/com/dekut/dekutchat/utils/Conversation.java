@@ -165,6 +165,27 @@ public class Conversation {
         });
     }
 
+    public void isEligible(@NonNull SimpleCallback<Boolean> finishedCallback){
+        Query query = firebaseDatabase.getReference().child("groups").child(convoId).child("members").orderByChild("id").equalTo(userEmail);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean status = false;
+
+                if (snapshot.exists()){
+                    status = true;
+                }
+
+                finishedCallback.callback(status);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     public interface SimpleCallback<T> {
         void callback(T data);
     }
