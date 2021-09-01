@@ -452,7 +452,7 @@ public class UserChat extends AppCompatActivity {
                         for (DataSnapshot snap : snapshot.getChildren()){
                             Message message1 = snap.getValue(Message.class);
                             long timestamp = message1.getSentAt();
-                            DatabaseReference reference1 = firebaseDatabase.getReference().child("conversations").child(convoId).child("lastMessage");
+                            DatabaseReference reference1 = firebaseDatabase.getReference().child("conversations").child(convoId).child("lastMessageT");
                             reference1.setValue(timestamp);
                             break;
                         }
