@@ -87,125 +87,70 @@ public class ViewGroup extends AppCompatActivity {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    group = snap.getValue(Group.class);
-                    group.isJoined(new Group.SimpleCallback<Boolean>() {
-                        @Override
-                        public void callback(Boolean isJoined) {
-                            if(isJoined){
-                                btnOperation.setText("Leave Group");
-                                membersRecyclerView.setVisibility(View.VISIBLE);
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        group = snap.getValue(Group.class);
+                        group.isJoined(new Group.SimpleCallback<Boolean>() {
+                            @Override
+                            public void callback(Boolean isJoined) {
+                                if (isJoined) {
+                                    btnOperation.setText("Leave Group");
+                                    membersRecyclerView.setVisibility(View.VISIBLE);
 
-                                linearLayoutManager = new LinearLayoutManager(ViewGroup.this);
-                                //linearLayoutManager.setReverseLayout(true);
-                                //linearLayoutManager.setStackFromEnd(true);
-                                membersRecyclerView.setLayoutManager(linearLayoutManager);
-                                userAdapter = new SearchUserAdapter(members, ViewGroup.this);
-                                userAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
-                                membersRecyclerView.setAdapter(userAdapter);
+                                    linearLayoutManager = new LinearLayoutManager(ViewGroup.this);
+                                    membersRecyclerView.setLayoutManager(linearLayoutManager);
+                                    userAdapter = new SearchUserAdapter(members, ViewGroup.this);
+                                    userAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+                                    membersRecyclerView.setAdapter(userAdapter);
 
-                                fetchMembers();
+                                    fetchMembers();
+                                } else {
+                                    btnOperation.setText("Join Group");
+                                    btnEditGroup.setVisibility(View.INVISIBLE);
+                                    membersRecyclerView.setVisibility(View.INVISIBLE);
+                                }
+
+
                             }
-                            else {
-                                btnOperation.setText("Join Group");
-                                btnEditGroup.setVisibility(View.INVISIBLE);
-                                membersRecyclerView.setVisibility(View.INVISIBLE);
-                            }
+                        });
 
+                        Glide.with(getApplicationContext())
+                                .load(group.getImageUrl())
+                                .into(imageView);
 
-
+                        tvName.setText(group.getName());
+                        tvType.setText(group.getType());
+                        if (group.getDescription() != null) {
+                            tvDesc2.setText(group.getDescription());
+                            tvDesc1.setVisibility(View.VISIBLE);
+                            tvDesc2.setVisibility(View.VISIBLE);
                         }
-                    });
 
-                    Glide.with(getApplicationContext())
-                            .load(group.getImageUrl())
-                            .into(imageView);
+                        group.getMembersCount(new Group.SimpleCallback<Long>() {
+                            @Override
+                            public void callback(Long num) {
+                                tvMembers.setText(String.valueOf(num));
+                            }
+                        });
 
-                    tvName.setText(group.getName());
-                    tvType.setText(group.getType());
-                    if (group.getDescription() != null){
-                        tvDesc2.setText(group.getDescription());
-                        tvDesc1.setVisibility(View.VISIBLE);
-                        tvDesc2.setVisibility(View.VISIBLE);
+                        group.isAdmin(new Group.SimpleCallback<Boolean>() {
+                            @Override
+                            public void callback(Boolean isAdmin) {
+                                if (isAdmin) {
+                                    btnEditGroup.setVisibility(View.VISIBLE);
+                                } else {
+                                    btnEditGroup.setVisibility(View.INVISIBLE);
+                                }
+                            }
+                        });
+
+                        break;
                     }
+                }
 
-                    group.getMembersCount(new Group.SimpleCallback<Long>() {
-                        @Override
-                        public void callback(Long num) {
-                            tvMembers.setText(String.valueOf(num));
-                        }
-                    });
-
-                    group.isAdmin(new Group.SimpleCallback<Boolean>() {
-                        @Override
-                        public void callback(Boolean isAdmin) {
-                            if (isAdmin){
-                                btnEditGroup.setVisibility(View.VISIBLE);
-                            }
-                            else {
-                                btnEditGroup.setVisibility(View.INVISIBLE);
-                            }
-                        }
-                    });
-
-                    btnOperation.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if(btnOperation.getText().toString().toLowerCase().equals("join group")){
-                                if(!group.getPassword().equals("")){
-                                    showAlertDialog();
-                                }
-                                else {
-                                    DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
-                                    Map<String, Object> map = new HashMap<>();
-                                    map.put("id", email);
-                                    reference.child(email.replace(".", "_")).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Toast.makeText(getApplicationContext(), "You have joined the group", Toast.LENGTH_LONG).show();
-                                            }
-                                            else {
-                                                Toast.makeText(getApplicationContext(), "Failed to join group, Try again later", Toast.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    });
-                                }
-
-                            }
-                            else {
-                                group.isAdmin(new Group.SimpleCallback<Boolean>() {
-                                    @Override
-                                    public void callback(Boolean isAdmin) {
-                                        group.getAdminCount(new Group.SimpleCallback<Long>() {
-                                            @Override
-                                            public void callback(Long adminCount) {
-                                                if (isAdmin && adminCount < 2){
-                                                    Toast.makeText(ViewGroup.this, "You cannot leave the Group because you are the only admin!", Toast.LENGTH_LONG).show();
-                                                }
-                                                else {
-                                                    leaveGroup();
-                                                }
-                                            }
-                                        });
-
-                                    }
-                                });
-
-                            }
-                        }
-                    });
-
-                    btnEditGroup.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent intent = new Intent(ViewGroup.this, EditGroup.class);
-                            intent.putExtra("groupId", groupId);
-                            startActivity(intent);
-                        }
-                    });
-
-                    break;
+                else {
+                    onBackPressed();
+                    finish();
                 }
             }
 
@@ -214,6 +159,64 @@ public class ViewGroup extends AppCompatActivity {
 
             }
         });
+
+        btnOperation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (btnOperation.getText().toString().toLowerCase().equals("join group")) {
+                    if (!group.getPassword().equals("")) {
+                        showAlertDialog();
+                    } else {
+                        DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("id", email);
+                        reference.child(email.replace(".", "_")).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(getApplicationContext(), "You have joined the group", Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Failed to join group, Try again later", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
+                    }
+
+                } else {
+                    group.isAdmin(new Group.SimpleCallback<Boolean>() {
+                        @Override
+                        public void callback(Boolean isAdmin) {
+                            group.getAdminCount(new Group.SimpleCallback<Long>() {
+                                @Override
+                                public void callback(Long adminCount) {
+                                    if (isAdmin && adminCount < 2) {
+                                        Toast.makeText(ViewGroup.this, "You cannot leave the Group because you are the only admin!", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        leaveGroup();
+                                    }
+                                }
+                            });
+
+                        }
+                    });
+
+                }
+            }
+        });
+
+        btnEditGroup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ViewGroup.this, EditGroup.class);
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     public void fetchMembers(){

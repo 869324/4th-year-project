@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -90,18 +91,6 @@ public class CreateGroup extends AppCompatActivity {
         radioGroup = findViewById(R.id.radioGroup);
         tvInfo = findViewById(R.id.tvInfo);
         
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if(checkedId == 1){
-                    type = "public";
-                }
-                else if(checkedId == 2){
-                    type = "private";
-                }
-            }
-        });
-        
         btnEditPic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -116,6 +105,7 @@ public class CreateGroup extends AppCompatActivity {
                 groupName = etGroupName.getText().toString();
                 password = etPassword.getText().toString();
                 description = etDescription.getText().toString();
+                int checkedId = radioGroup.getCheckedRadioButtonId();
 
                 if(groupName.isEmpty()){
                     etGroupName.setError("Enter group name");
@@ -123,16 +113,25 @@ public class CreateGroup extends AppCompatActivity {
                     btnCreate.setEnabled(true);
                 }
 
-                else if(type == null){
+                else if(checkedId == -1){
                     Toast.makeText(getApplicationContext(), "Select group type", Toast.LENGTH_SHORT).show();
                     btnCreate.setEnabled(true);
                 }
+
                 else{
                     progressDialog = new ProgressDialog(CreateGroup.this);
                     progressDialog.show();
                     progressDialog.setContentView(R.layout.progress_dialog);
                     progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
                     progressDialog.setCancelable(false);
+
+                    if (checkedId == 1){
+                        type = "public";
+                    }
+
+                    if (checkedId == 2){
+                        type = "private";
+                    }
 
                     Query query = firebaseDatabase.getReference().child("groups").orderByChild("name").equalTo(groupName);
                     query.addListenerForSingleValueEvent(new ValueEventListener() {
