@@ -77,8 +77,7 @@ public class EditGroup extends AppCompatActivity {
 
     int pickImageCamera = 1, pickImageGallery = 2, requestCamera = 3, requestGallery = 4;
     Uri selectedImage;
-    String key, previousUrl, type, currentPhotoPath, groupId;
-    FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    String previousUrl, currentPhotoPath, groupId;
     FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     StorageReference storageReference;
@@ -116,9 +115,11 @@ public class EditGroup extends AppCompatActivity {
                 for(DataSnapshot snap : snapshot.getChildren()){
                     group = snap.getValue(Group.class);
 
-                    Glide.with(getApplicationContext())
-                            .load(group.getImageUrl())
-                            .into(imageView);
+                    if (group.getImageUrl() != null) {
+                        Glide.with(getApplicationContext())
+                                .load(group.getImageUrl())
+                                .into(imageView);
+                    }
 
                     tvName.setText(group.getName());
                     tvType.setText(group.getType());
@@ -176,8 +177,8 @@ public class EditGroup extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (group.getPassword() == null){
-                    showDeleteDialog("");
+                if (group.getPassword().isEmpty()){
+                    showDeleteDialog();
                 }
                 else {
                     showPasswordDialog();
@@ -310,13 +311,27 @@ public class EditGroup extends AppCompatActivity {
     }
 
     public void selectImage() {
-        final CharSequence[] options = {"Take Photo", "Remove Photo", "Choose From Gallery","Cancel"};
+        final CharSequence[] options = {"Take Photo", "Choose From Gallery", "Remove Photo","Cancel"};
         AlertDialog.Builder builder = new AlertDialog.Builder(EditGroup.this);
         builder.setTitle("Select Option");
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
-                if (options[item].equals("Take Photo")) {
+                if (options[item].equals("Remove Photo")){
+                    StorageReference reference = firebaseStorage.getReferenceFromUrl(group.getImageUrl());
+                    DatabaseReference reference1 = firebaseDatabase.getReference().child("groups").child(groupId).child("imageUrl");
+                    reference1.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull @NotNull Task<Void> task) {
+                            if (task.isSuccessful()){
+                                reference.delete();
+                            }
+                        }
+                    });
+
+                    //imageView.setImageDrawable(null);
+                }
+                else if (options[item].equals("Take Photo")) {
                     dialog.dismiss();
                     if (ContextCompat.checkSelfPermission(EditGroup.this, Manifest.permission.CAMERA)== PackageManager.PERMISSION_DENIED){
                         ActivityCompat.requestPermissions(EditGroup.this, new String[] {Manifest.permission.CAMERA}, requestCamera);
@@ -378,7 +393,13 @@ public class EditGroup extends AppCompatActivity {
                 if (password.isEmpty()) {
                     etItem.setError("Enter Password");
                 } else {
-                    showDeleteDialog(password);
+                    if (password.equals(group.getPassword())) {
+                        showDeleteDialog();
+                    }
+
+                    else {
+                        Toast.makeText(EditGroup.this, "You entered the wrong password", Toast.LENGTH_LONG).show();
+                    }
                     alertDialog.dismiss();
                 }
             }
@@ -392,13 +413,17 @@ public class EditGroup extends AppCompatActivity {
         });
     }
 
-    public void showDeleteDialog(String password){
+    public void showDeleteDialog(){
         Dialog deleteDialog = new Dialog(EditGroup.this);
         deleteDialog.setContentView(R.layout.delete_dialog2);
         deleteDialog.getWindow().setLayout(android.view.ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         deleteDialog.setCancelable(false);
+
+        TextView textView = deleteDialog.findViewById(R.id.tvTitle);
         Button btnCancel = deleteDialog.findViewById(R.id.btnCancel);
         Button btnDelete = deleteDialog.findViewById(R.id.btnDelete);
+
+        textView.setText("Are you sure you want to delete this group?");
 
         deleteDialog.show();
 
@@ -422,9 +447,19 @@ public class EditGroup extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull @NotNull Task<Void> task) {
                         if (task.isSuccessful()){
-                            StorageReference reference1 = firebaseStorage.getReferenceFromUrl(group.getImageUrl());
-                            reference1.delete();
-                            Toast.makeText(EditGroup.this, "This group has been deleted", Toast.LENGTH_LONG).show();
+                            DatabaseReference reference1 = firebaseDatabase.getReference().child("groupConversations").child(groupId);
+                            reference1.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull @NotNull Task<Void> task) {
+                                    if (task.isSuccessful()){
+                                        StorageReference reference2 = firebaseStorage.getReferenceFromUrl(group.getImageUrl());
+                                        reference2.delete();
+                                        Toast.makeText(EditGroup.this, "This group has been deleted", Toast.LENGTH_LONG).show();
+                                        onBackPressed();
+                                        finish();
+                                    }
+                                }
+                            });
 
                         }
                     }
@@ -506,23 +541,11 @@ public class EditGroup extends AppCompatActivity {
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.type_dialog, null);
         builder.setView(view);
-        builder.setTitle("Select Course");
+        builder.setTitle("Select Type");
 
         RadioGroup radioGroup = view.findViewById(R.id.radioGroup);
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnOk = view.findViewById(R.id.btnOk);
-
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if(checkedId == 1){
-                    type = "public";
-                }
-                else if(checkedId == 2){
-                    type = "private";
-                }
-            }
-        });
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
@@ -530,26 +553,38 @@ public class EditGroup extends AppCompatActivity {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(type == null){
+                int checkedId = radioGroup.getCheckedRadioButtonId();
+
+                if (checkedId == -1){
                     Toast.makeText(EditGroup.this, "Select type", Toast.LENGTH_LONG).show();
                 }
                 else {
-                    DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId);
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("type", type);
-                    reference.updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if(task.isSuccessful()){
-                                Toast.makeText(getApplicationContext(), "Course has been updated", Toast.LENGTH_LONG).show();
-                                alertDialog.dismiss();
+                    String type = null;
+                    if (checkedId == 1) {
+                        type = "public";
+                    } else if (checkedId == 2) {
+                        type = "private";
+                    }
+
+                    if (type != null) {
+                        DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId);
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("type", type);
+                        reference.updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(getApplicationContext(), "Group type has been updated", Toast.LENGTH_LONG).show();
+                                    alertDialog.dismiss();
+                                }
+                                if (!task.isSuccessful()) {
+                                    Toast.makeText(getApplicationContext(), task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                }
                             }
-                            if(!task.isSuccessful()){
-                                Toast.makeText(getApplicationContext(), task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
+                        });
+                    }
                 }
+
             }
         });
 
