@@ -174,6 +174,26 @@ public class EditGroup extends AppCompatActivity {
             }
         });
 
+        btnAddMembers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(EditGroup.this, SelectUser.class);
+                intent.putExtra("operation", "addMembers");
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
+            }
+        });
+
+        btnAddAdmins.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(EditGroup.this, SelectUser.class);
+                intent.putExtra("operation", "addAdmins");
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
+            }
+        });
+
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

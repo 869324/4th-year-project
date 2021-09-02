@@ -1,5 +1,6 @@
 package com.dekut.dekutchat.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.R;
+import com.dekut.dekutchat.activities.SelectUser;
 import com.dekut.dekutchat.activities.ViewImage;
 import com.dekut.dekutchat.utils.Student;
 
@@ -27,10 +29,16 @@ public class SelectedUserAdapter extends RecyclerView.Adapter<SelectedUserAdapte
     Context context;
     String email;
 
+    Activity activity;
+    SelectUser selectUser;
+
     public SelectedUserAdapter(List<Student> students, Context context, String email){
         this.students = students;
         this.context = context;
         this.email = email;
+
+        activity = (Activity) context;
+        selectUser = (SelectUser) activity;
     }
 
     @NonNull
@@ -60,7 +68,8 @@ public class SelectedUserAdapter extends RecyclerView.Adapter<SelectedUserAdapte
         holder.btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                selectUser.removeUser(student);
+                selectUser.Uncheck(student);
             }
         });
     }
