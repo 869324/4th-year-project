@@ -42,6 +42,8 @@
                 android:layout_marginStart="10dp"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
                 app:layout_constraintLeft_toRightOf="@id/profilePicCard"
                 app:layout_constraintTop_toTopOf="@id/profilePicCard" />
 
@@ -52,6 +54,8 @@
                 android:textColor="@color/textColor"
                 android:layout_marginStart="10dp"
                 android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"
                 app:layout_constraintTop_toBottomOf="@id/tvUsername"
                 app:layout_constraintLeft_toRightOf="@id/profilePicCard"
                 app:layout_constraintBottom_toBottomOf="@id/profilePicCard"/>
