@@ -101,6 +101,7 @@ public class SearchUserAdapter extends RecyclerView.Adapter<SearchUserAdapter.Vi
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvUsername, tvEmail;
         ImageView profilePic;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvUsername = itemView.findViewById(R.id.tvUsername);
