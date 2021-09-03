@@ -293,7 +293,8 @@ public class CreateGroup extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if(task.isSuccessful()){
 
-                                        reference1.child("admins").push().setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        DatabaseReference reference2 = reference1.child("admins").child(email.replace(".", "_"));
+                                        reference2.setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if(task.isSuccessful()){

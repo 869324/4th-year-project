@@ -69,6 +69,10 @@ public class SelectUser extends AppCompatActivity {
         operation = extras.getString("operation");
         groupId = extras.getString("groupId");
 
+        if (operation.contains("remove")){
+            btnAdd.setText("Remove");
+        }
+
         linearLayoutManager1 = new LinearLayoutManager(SelectUser.this);
         linearLayoutManager1.setOrientation(RecyclerView.HORIZONTAL);
         recyclerView1.setLayoutManager(linearLayoutManager1);
@@ -96,8 +100,16 @@ public class SelectUser extends AppCompatActivity {
                     if (operation.equals("addAdmins")) {
                         fetchMembers();
                     }
-                    else {
+                    else if (operation.equals("addMembers")){
                         searchUsers();
+                    }
+
+                    else if (operation.equals("removeMembers")){
+                        fetchMembers2();
+                    }
+
+                    else if (operation.equals("removeAdmins")){
+                        fetchAdmins();
                     }
                     break;
                 }
@@ -119,12 +131,19 @@ public class SelectUser extends AppCompatActivity {
 
                 if ((totalItems -  lastPosition) < 3){
                     if (!isLoading) {
-                        if (operation.equals("addMembers")) {
+                        if (operation.equals("addAdmins")) {
+                            fetchMembers();
+                        }
+                        else if (operation.equals("addMembers")){
                             searchUsers();
                         }
 
-                        else {
-                            fetchMembers();
+                        else if (operation.equals("removeMembers")){
+                            fetchMembers2();
+                        }
+
+                        else if (operation.equals("removeAdmins")){
+                            fetchAdmins();
                         }
                     }
                 }
@@ -135,7 +154,7 @@ public class SelectUser extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 DatabaseReference reference;
-                if (operation.equals("addMembers")) {
+                if (operation.equals("addMembers") || operation.equals("removeMembers")) {
                     reference = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
                 }
 
@@ -145,15 +164,22 @@ public class SelectUser extends AppCompatActivity {
 
                 for (Student student : selectedStudents) {
                     DatabaseReference reference1 = reference.child(student.getEmail().replace(".", "_"));
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("id", student.getEmail());
 
-                    if (operation.equals("addMembers")) {
-                        map.put("joinedAt", ServerValue.TIMESTAMP);
-                        map.put("lastRead", 0l);
+                    if (operation.contains("add")) {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("id", student.getEmail());
+
+                        if (operation.equals("addMembers")) {
+                            map.put("joinedAt", ServerValue.TIMESTAMP);
+                            map.put("lastRead", 0l);
+                        }
+
+                        reference1.setValue(map);
                     }
 
-                    reference1.setValue(map);
+                    else {
+                        reference1.removeValue();
+                    }
                 }
 
                 onBackPressed();
@@ -175,12 +201,19 @@ public class SelectUser extends AppCompatActivity {
                 selectUserAdapter.notifyDataSetChanged();
                 key = null;
 
-                if (operation.equals("addMembers")) {
+                if (operation.equals("addAdmins")) {
+                    fetchMembers();
+                }
+                else if (operation.equals("addMembers")){
                     searchUsers();
                 }
 
-                else {
-                    fetchMembers();
+                else if (operation.equals("removeMembers")){
+                    fetchMembers2();
+                }
+
+                else if (operation.equals("removeAdmins")){
+                    fetchAdmins();
                 }
             }
 
@@ -206,29 +239,44 @@ public class SelectUser extends AppCompatActivity {
                     for (DataSnapshot snap : snapshot.getChildren()) {
                         Student student = snap.getValue(Student.class);
 
-                        if (student.getEmail().equals(email) || keys1.contains(student.getId())) {
-                            continue;
-                        }
+                        Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByChild("id").equalTo(student.getEmail());
+                        query.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                if (!snapshot.exists()){
+                                    if (!student.getEmail().equals(email) && !keys1.contains(student.getId())) {
+                                        if (keyword == null || keyword.isEmpty()) {
+                                            students.add(student);
+                                            keys1.add(student.getId());
+                                            selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                        } else {
+                                            String name = student.getUserName().toLowerCase();
+                                            String email = student.getEmail().toLowerCase();
 
-                        else {
-                            if (keyword == null || keyword.isEmpty()) {
-                                populate(student);
-                            } else {
-                                String name = student.getUserName().toLowerCase();
-                                String email = student.getEmail().toLowerCase();
-
-                                if (name.contains(keyword) || email.contains(keyword)) {
-                                    populate(student);
+                                            if (name.contains(keyword) || email.contains(keyword)) {
+                                                students.add(student);
+                                                keys1.add(student.getId());
+                                                selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
-                        }
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
+                            }
+                        });
                         key = student.getId();
                     }
-                    isLoading = false;
-                } else {
-                    searchUsers();
+
+                    if (students.isEmpty()){
+                        searchUsers();
+                    }
+                    else {
+                        isLoading = false;
+                    }
                 }
 
             }
@@ -282,26 +330,6 @@ public class SelectUser extends AppCompatActivity {
         return isSelected;
     }
 
-    public void populate(Student student){
-        Query query = firebaseDatabase.getReference().child("groups").child("members").orderByChild("id").equalTo(student.getEmail());
-
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                if (!snapshot.exists()){
-                    students.add(student);
-                    keys1.add(student.getId());
-                    selectUserAdapter.notifyItemInserted(students.size() - 1);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-            }
-        });
-    }
-
     public void Uncheck (Student student){
         selectUserAdapter.uncheck(student);
     }
@@ -309,9 +337,9 @@ public class SelectUser extends AppCompatActivity {
     public void fetchMembers(){
         isLoading = true;
         if (key == null) {
-            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(2);
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100);
         } else {
-            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().startAt(key).limitToFirst(2);
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100).startAt(key);
         }
 
         query.addValueEventListener(new ValueEventListener() {
@@ -367,11 +395,149 @@ public class SelectUser extends AppCompatActivity {
                         });
                         key = id.replace(".", "_");
                     }
-                    isLoading = false;
+
+                    if (students.isEmpty()){
+                        fetchMembers();
+                    }
+                    else {
+                        isLoading = false;
+                    }
                 }
-                else {
-                    fetchMembers();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    public void fetchMembers2(){
+        isLoading = true;
+        if (key == null) {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100);
+        } else {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100).startAt(key);
+        }
+
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        String id = snap.child("id").getValue().toString();
+
+                        Query query2 = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(id);
+                        query2.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                for (DataSnapshot snap : snapshot.getChildren()) {
+                                    Student student = snap.getValue(Student.class);
+
+                                    if (!keys1.contains(student.getEmail()) && !student.getEmail().equals(email)) {
+
+                                        if (keyword == null || keyword.isEmpty()) {
+                                            students.add(student);
+                                            keys1.add(student.getEmail());
+                                            selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                        } else {
+                                            String name = student.getUserName().toLowerCase();
+                                            String email = student.getEmail().toLowerCase();
+
+                                            if (name.contains(keyword) || email.contains(keyword)) {
+                                                students.add(student);
+                                                keys1.add(student.getEmail());
+                                                selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                            }
+                        });
+                        key = id.replace(".", "_");
+                    }
+
+                    if (students.isEmpty()){
+                        fetchMembers2();
+                    }
+                    else {
+                        isLoading = false;
+                    }
                 }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    public void fetchAdmins(){
+        isLoading = true;
+        if (key == null) {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("admins").orderByKey().limitToFirst(100);
+        } else {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("admins").orderByKey().limitToFirst(100).startAt(key);
+        }
+
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        String id = snap.child("id").getValue().toString();
+
+                        Query query2 = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(id);
+                        query2.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                for (DataSnapshot snap : snapshot.getChildren()) {
+                                    Student student = snap.getValue(Student.class);
+
+                                    if (!keys1.contains(student.getEmail()) && !student.getEmail().equals(email)) {
+
+                                        if (keyword == null || keyword.isEmpty()) {
+                                            students.add(student);
+                                            keys1.add(student.getEmail());
+                                            selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                        } else {
+                                            String name = student.getUserName().toLowerCase();
+                                            String email = student.getEmail().toLowerCase();
+
+                                            if (name.contains(keyword) || email.contains(keyword)) {
+                                                students.add(student);
+                                                keys1.add(student.getEmail());
+                                                selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                            }
+                        });
+                        key = id.replace(".", "_");
+                    }
+
+                    if (students.isEmpty()){
+                        fetchAdmins();
+                    }
+                    else {
+                        isLoading = false;
+                    }
+                }
+
             }
 
             @Override
