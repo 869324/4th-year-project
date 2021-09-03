@@ -147,8 +147,12 @@ public class SelectUser extends AppCompatActivity {
                     DatabaseReference reference1 = reference.child(student.getEmail().replace(".", "_"));
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", student.getEmail());
-                    map.put("joinedAt", ServerValue.TIMESTAMP);
-                    map.put("lastRead", 0l);
+
+                    if (operation.equals("addMembers")) {
+                        map.put("joinedAt", ServerValue.TIMESTAMP);
+                        map.put("lastRead", 0l);
+                    }
+
                     reference1.setValue(map);
                 }
 
