@@ -286,6 +286,8 @@ public class CreateGroup extends AppCompatActivity {
                         if(task.isSuccessful()){
                             Map<String, Object> map = new HashMap<>();
                             map.put("id", email);
+                            map.put("joinedAt", ServerValue.TIMESTAMP);
+                            map.put("lastRead", 0l);
                             reference1.child("members").child(email.replace(".", "_")).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -298,7 +300,7 @@ public class CreateGroup extends AppCompatActivity {
                                                     DatabaseReference reference2 = firebaseDatabase.getReference().child("groupConversations");
                                                     Map<String, Object> conversation = new HashMap<>();
                                                     conversation.put("convoId", key);
-                                                    conversation.put("lastMessage", 0);
+                                                    conversation.put("lastMessageT", ServerValue.TIMESTAMP);
                                                     reference2.child(key).setValue(conversation).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<Void> task) {

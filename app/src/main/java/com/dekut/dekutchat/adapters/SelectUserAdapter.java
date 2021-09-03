@@ -63,9 +63,23 @@ public class SelectUserAdapter extends RecyclerView.Adapter<SelectUserAdapter.Vi
         String email = student.getEmail();
         String picUrl = student.getProfileUrl();
 
+        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    selectUser.addUser(student);
+                }
+                else {
+                    selectUser.removeUser(student);
+                }
+            }
+        });
+
         if (selectUser.isSelected(student)) {
             holder.checkBox.setChecked(true);
-        } else {
+        }
+
+        else {
             holder.checkBox.setChecked(false);
         }
 
@@ -83,18 +97,6 @@ public class SelectUserAdapter extends RecyclerView.Adapter<SelectUserAdapter.Vi
                 Intent intent = new Intent(context, ViewImage.class);
                 intent.putExtra("url", picUrl);
                 context.startActivity(intent);
-            }
-        });
-
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b) {
-                    selectUser.addUser(student);
-                }
-                else {
-                    selectUser.removeUser(student);
-                }
             }
         });
 
