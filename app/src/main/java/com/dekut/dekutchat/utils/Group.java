@@ -126,7 +126,7 @@ public class Group {
     public void getMembersCount(@NonNull SimpleCallback<Long> finishedCallback){
         if (groupId != null) {
             Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
+            query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     long num = 0;

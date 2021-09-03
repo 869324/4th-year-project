@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -29,6 +30,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
@@ -37,6 +39,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.R;
+import com.dekut.dekutchat.adapters.ButtonsAdapter;
 import com.dekut.dekutchat.adapters.SearchUserAdapter;
 import com.dekut.dekutchat.utils.Group;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -62,8 +65,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -73,7 +78,8 @@ public class EditGroup extends AppCompatActivity {
     ImageView imageView;
     ImageButton btnEditPic, btnEditType, btnEditName, btnEditDesc;
     TextView tvType, tvName, tvDesc;
-    Button btnAddMembers, btnAddAdmins, btnAddPassword, btnDelete;
+    Button btnDelete;
+    GridView gridView;
 
     int pickImageCamera = 1, pickImageGallery = 2, requestCamera = 3, requestGallery = 4;
     Uri selectedImage;
@@ -86,6 +92,7 @@ public class EditGroup extends AppCompatActivity {
     byte[] bytes;
     File file;
     Group group;
+    ButtonsAdapter buttonsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,10 +107,8 @@ public class EditGroup extends AppCompatActivity {
         tvType = findViewById(R.id.tvType2);
         tvName = findViewById(R.id.tvName2);
         tvDesc = findViewById(R.id.tvDescription2);
-        btnAddMembers = findViewById(R.id.btnAddMembers);
-        btnAddAdmins = findViewById(R.id.btnAddAdmin);
-        btnAddPassword = findViewById(R.id.btnAddPassword);
         btnDelete = findViewById(R.id.btnDelete);
+        gridView = findViewById(R.id.gridView);
 
         Bundle extras = getIntent().getExtras();
         groupId = extras.getString("groupId");
@@ -114,6 +119,8 @@ public class EditGroup extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for(DataSnapshot snap : snapshot.getChildren()){
                     group = snap.getValue(Group.class);
+
+                    populateGrid();
 
                     if (group.getImageUrl() != null) {
                         Glide.with(getApplicationContext())
@@ -174,7 +181,7 @@ public class EditGroup extends AppCompatActivity {
             }
         });
 
-        btnAddMembers.setOnClickListener(new View.OnClickListener() {
+        /*btnAddMembers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(EditGroup.this, SelectUser.class);
@@ -204,7 +211,7 @@ public class EditGroup extends AppCompatActivity {
                     showPasswordDialog();
                 }
             }
-        });
+        });*/
     }
 
     @Override
@@ -614,6 +621,55 @@ public class EditGroup extends AppCompatActivity {
                 alertDialog.dismiss();
             }
         });
+    }
+
+    public void populateGrid() {
+        List<Map> entries = new ArrayList<>();
+
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("text", "Add Members");
+        map1.put("imgId", R.drawable.member);
+        entries.add(map1);
+
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("text", "Remove Members");
+        map2.put("imgId", R.drawable.remove_user);
+        entries.add(map2);
+
+        Map<String, Object> map3 = new HashMap<>();
+        map3.put("text", "Add Admins");
+        map3.put("imgId", R.drawable.member);
+        entries.add(map3);
+
+        Map<String, Object> map4 = new HashMap<>();
+        map4.put("text", "Remove Admins");
+        map4.put("imgId", R.drawable.remove_user);
+        entries.add(map4);
+
+        Map<String, Object> map5 = new HashMap<>();
+        if (group.getPassword() == null || group.getPassword().isEmpty()) {
+            map5.put("text", "Add Password");
+            map5.put("imgId", R.drawable.padlock);
+            entries.add(map5);
+        }
+        else {
+            map5.put("text", "Change Password");
+            map5.put("imgId", R.drawable.padlock);
+            entries.add(map5);
+
+            Map<String, Object> map6 = new HashMap<>();
+            map6.put("text", "Remove Password");
+            map6.put("imgId", R.drawable.padlock);
+            entries.add(map6);
+        }
+
+        Map<String, Object> map7 = new HashMap<>();
+        map7.put("text", "Delete Account");
+        map7.put("imgId", R.drawable.remove_group);
+        entries.add(map7);
+
+        buttonsAdapter = new ButtonsAdapter(this, entries, groupId);
+        gridView.setAdapter(buttonsAdapter);
     }
 
     public File createImageFile() throws IOException {

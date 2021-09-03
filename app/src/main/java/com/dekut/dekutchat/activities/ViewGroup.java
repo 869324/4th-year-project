@@ -115,9 +115,11 @@ public class ViewGroup extends AppCompatActivity {
                             }
                         });
 
-                        Glide.with(getApplicationContext())
-                                .load(group.getImageUrl())
-                                .into(imageView);
+                        if (group.getImageUrl() != null) {
+                            Glide.with(getApplicationContext())
+                                    .load(group.getImageUrl())
+                                    .into(imageView);
+                        }
 
                         tvName.setText(group.getName());
                         tvType.setText(group.getType());

@@ -128,6 +128,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        Fragment fragment = fragmentManager.findFragmentByTag("groups");
+        if (fragment != null && fragment.isVisible()){
+            Groups groups = (Groups) fragment;
+            groups.fetchChats();
+        }
+    }
+
     private final BottomNavigationView.OnNavigationItemSelectedListener navigationItemSelectedListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @SuppressLint("NonConstantResourceId")
