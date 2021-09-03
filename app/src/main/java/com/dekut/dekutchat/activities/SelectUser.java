@@ -226,9 +226,13 @@ public class SelectUser extends AppCompatActivity {
 
                         key = student.getId();
                     }
-                    isLoading = false;
-                } else {
-                    searchUsers();
+
+                    if (students.isEmpty()){
+                        searchUsers();
+                    }
+                    else {
+                        isLoading = false;
+                    }
                 }
 
             }
@@ -309,9 +313,9 @@ public class SelectUser extends AppCompatActivity {
     public void fetchMembers(){
         isLoading = true;
         if (key == null) {
-            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(2);
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100);
         } else {
-            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().startAt(key).limitToFirst(2);
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100).startAt(key);
         }
 
         query.addValueEventListener(new ValueEventListener() {
@@ -367,11 +371,15 @@ public class SelectUser extends AppCompatActivity {
                         });
                         key = id.replace(".", "_");
                     }
-                    isLoading = false;
+
+                    if (students.isEmpty()){
+                        fetchMembers();
+                    }
+                    else {
+                        isLoading = false;
+                    }
                 }
-                else {
-                    fetchMembers();
-                }
+
             }
 
             @Override
