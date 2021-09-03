@@ -61,6 +61,9 @@ public class ViewGroup extends AppCompatActivity {
     List<String> keys = new ArrayList<>();
     Group group;
     SearchUserAdapter userAdapter;
+    boolean isLoading = false;
+    Query query;
+    String key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +108,23 @@ public class ViewGroup extends AppCompatActivity {
                                     membersRecyclerView.setAdapter(userAdapter);
 
                                     fetchMembers();
+
+                                    membersRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                                        @Override
+                                        public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
+                                            super.onScrolled(recyclerView, dx, dy);
+                                            LinearLayoutManager linearLayoutManager1 = (LinearLayoutManager) recyclerView.getLayoutManager();
+                                            int lastPosition = linearLayoutManager1.findLastCompletelyVisibleItemPosition();
+                                            int totalItems = linearLayoutManager1.getItemCount();
+
+                                            if ((totalItems -  lastPosition) < 3){
+                                                if (!isLoading) {
+                                                    fetchMembers();
+                                                }
+                                            }
+                                        }
+                                    });
+
                                 } else {
                                     btnOperation.setText("Join Group");
                                     btnEditGroup.setVisibility(View.INVISIBLE);
@@ -225,32 +245,51 @@ public class ViewGroup extends AppCompatActivity {
     }
 
     public void fetchMembers(){
-        Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
+        isLoading = true;
+        if (key == null) {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100);
+        } else {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(100).startAt(key);
+        }
+
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                for (DataSnapshot snap : snapshot.getChildren()){
-                    String id = snap.child("id").getValue().toString();
-                    Query query1 = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(id);
-                    query1.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                            for (DataSnapshot snap : snapshot.getChildren()){
-                                Student student = snap.getValue(Student.class);
-                                if (!keys.contains(student.getEmail()) && !student.getEmail().equals(email)){
-                                    members.add(student);
-                                    keys.add(student.getEmail());
-                                    userAdapter.notifyItemInserted(members.size() - 1);
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        String id = snap.child("id").getValue().toString();
+
+                        Query query2 = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(id);
+                        query2.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                for (DataSnapshot snap : snapshot.getChildren()) {
+                                    Student student = snap.getValue(Student.class);
+
+                                    if (!keys.contains(student.getEmail()) && !student.getEmail().equals(email)) {
+                                        members.add(student);
+                                        keys.add(student.getEmail());
+                                        userAdapter.notifyItemInserted(members.size() - 1);
+                                    }
                                 }
                             }
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
-                        }
-                    });
+                            }
+                        });
+                        key = id.replace(".", "_");
+                    }
+
+                    if (members.isEmpty()){
+                        fetchMembers();
+                    }
+                    else {
+                        isLoading = false;
+                    }
                 }
+
             }
 
             @Override

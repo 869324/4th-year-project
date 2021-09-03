@@ -181,37 +181,6 @@ public class EditGroup extends AppCompatActivity {
             }
         });
 
-        /*btnAddMembers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(EditGroup.this, SelectUser.class);
-                intent.putExtra("operation", "addMembers");
-                intent.putExtra("groupId", groupId);
-                startActivity(intent);
-            }
-        });
-
-        btnAddAdmins.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(EditGroup.this, SelectUser.class);
-                intent.putExtra("operation", "addAdmins");
-                intent.putExtra("groupId", groupId);
-                startActivity(intent);
-            }
-        });
-
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (group.getPassword().isEmpty()){
-                    showDeleteDialog();
-                }
-                else {
-                    showPasswordDialog();
-                }
-            }
-        });*/
     }
 
     @Override
@@ -355,8 +324,6 @@ public class EditGroup extends AppCompatActivity {
                             }
                         }
                     });
-
-                    //imageView.setImageDrawable(null);
                 }
                 else if (options[item].equals("Take Photo")) {
                     dialog.dismiss();
@@ -398,101 +365,6 @@ public class EditGroup extends AppCompatActivity {
             }
         });
         builder.show();
-    }
-
-    public void showPasswordDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(EditGroup.this);
-        LayoutInflater inflater = getLayoutInflater();
-        View view = inflater.inflate(R.layout.entry_dialog2, null);
-        builder.setView(view);
-        EditText etItem = view.findViewById(R.id.etString);
-        etItem.setTransformationMethod(PasswordTransformationMethod.getInstance());
-        builder.setTitle("Enter Password");
-        etItem.requestFocus();
-        Button btnCancel = view.findViewById(R.id.btnCancel);
-        Button btnOk = view.findViewById(R.id.btnOk);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-        btnOk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String password = etItem.getText().toString();
-                if (password.isEmpty()) {
-                    etItem.setError("Enter Password");
-                } else {
-                    if (password.equals(group.getPassword())) {
-                        showDeleteDialog();
-                    }
-
-                    else {
-                        Toast.makeText(EditGroup.this, "You entered the wrong password", Toast.LENGTH_LONG).show();
-                    }
-                    alertDialog.dismiss();
-                }
-            }
-        });
-
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                alertDialog.dismiss();
-            }
-        });
-    }
-
-    public void showDeleteDialog(){
-        Dialog deleteDialog = new Dialog(EditGroup.this);
-        deleteDialog.setContentView(R.layout.delete_dialog2);
-        deleteDialog.getWindow().setLayout(android.view.ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        deleteDialog.setCancelable(false);
-
-        TextView textView = deleteDialog.findViewById(R.id.tvTitle);
-        Button btnCancel = deleteDialog.findViewById(R.id.btnCancel);
-        Button btnDelete = deleteDialog.findViewById(R.id.btnDelete);
-
-        textView.setText("Are you sure you want to delete this group?");
-
-        deleteDialog.show();
-
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteDialog.dismiss();
-            }
-        });
-
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ProgressDialog progressDialog = new ProgressDialog(EditGroup.this);
-                progressDialog.show();
-                progressDialog.setContentView(R.layout.progress_dialog);
-                progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-
-                DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId);
-                reference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull @NotNull Task<Void> task) {
-                        if (task.isSuccessful()){
-                            DatabaseReference reference1 = firebaseDatabase.getReference().child("groupConversations").child(groupId);
-                            reference1.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull @NotNull Task<Void> task) {
-                                    if (task.isSuccessful()){
-                                        StorageReference reference2 = firebaseStorage.getReferenceFromUrl(group.getImageUrl());
-                                        reference2.delete();
-                                        Toast.makeText(EditGroup.this, "This group has been deleted", Toast.LENGTH_LONG).show();
-                                        onBackPressed();
-                                        finish();
-                                    }
-                                }
-                            });
-
-                        }
-                    }
-                });
-            }
-        });
     }
 
     public void showEntryDialog(String child){
@@ -664,7 +536,7 @@ public class EditGroup extends AppCompatActivity {
         }
 
         Map<String, Object> map7 = new HashMap<>();
-        map7.put("text", "Delete Account");
+        map7.put("text", "Delete Group");
         map7.put("imgId", R.drawable.remove_group);
         entries.add(map7);
 
