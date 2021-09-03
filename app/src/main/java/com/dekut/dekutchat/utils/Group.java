@@ -124,23 +124,25 @@ public class Group {
     }
 
     public void getMembersCount(@NonNull SimpleCallback<Long> finishedCallback){
-        Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                long num = 0;
-                if(snapshot.exists()){
-                    num = snapshot.getChildrenCount();
+        if (groupId != null) {
+            Query query = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    long num = 0;
+                    if (snapshot.exists()) {
+                        num = snapshot.getChildrenCount();
+                    }
+
+                    finishedCallback.callback(num);
                 }
 
-                finishedCallback.callback(num);
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
+                }
+            });
+        }
     }
 
     public void getAdminCount(@NonNull SimpleCallback<Long> finishedCallback){

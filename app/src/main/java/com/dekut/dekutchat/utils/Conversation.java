@@ -106,10 +106,16 @@ public class Conversation {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot snap : snapshot.getChildren()){
-                    lastMessage = snap.getValue(Message.class);
-                    finishedCallback.callback(lastMessage);
-                    break;
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        lastMessage = snap.getValue(Message.class);
+                        finishedCallback.callback(lastMessage);
+                        break;
+                    }
+                }
+
+                else {
+                    finishedCallback.callback(null);
                 }
             }
 
@@ -177,6 +183,31 @@ public class Conversation {
                 }
 
                 finishedCallback.callback(status);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    public void getJoinedAt(@NonNull SimpleCallback<Long> finishedCallback){
+        Query query = firebaseDatabase.getReference().child("groups").child(convoId).child("members").orderByChild("id").equalTo(userEmail);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        try {
+                            long timestamp = (long) snap.child("joinedAt").getValue();
+                            finishedCallback.callback(timestamp);
+                        }catch (Exception ex){
+                            finishedCallback.callback((long) 0);
+                        }
+                        break;
+                    }
+                }
             }
 
             @Override

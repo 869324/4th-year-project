@@ -22,14 +22,18 @@ import com.dekut.dekutchat.utils.Student;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SelectUser extends AppCompatActivity {
     RecyclerView recyclerView1, recyclerView2;
@@ -49,6 +53,7 @@ public class SelectUser extends AppCompatActivity {
     SelectUserAdapter selectUserAdapter;
     SelectedUserAdapter selectedUserAdapter;
     boolean isLoading = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,8 +88,17 @@ public class SelectUser extends AppCompatActivity {
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                 for (DataSnapshot snap : snapshot.getChildren()) {
                     group = snap.getValue(Group.class);
-                    isLoading = true;
-                    searchUsers();
+                    students.clear();
+                    keys1.clear();
+                    key = null;
+                    selectUserAdapter.notifyDataSetChanged();
+
+                    if (operation.equals("addAdmins")) {
+                        fetchMembers();
+                    }
+                    else {
+                        searchUsers();
+                    }
                     break;
                 }
             }
@@ -105,8 +119,13 @@ public class SelectUser extends AppCompatActivity {
 
                 if ((totalItems -  lastPosition) < 3){
                     if (!isLoading) {
-                        isLoading = true;
-                        searchUsers();
+                        if (operation.equals("addMembers")) {
+                            searchUsers();
+                        }
+
+                        else {
+                            fetchMembers();
+                        }
                     }
                 }
             }
@@ -115,7 +134,26 @@ public class SelectUser extends AppCompatActivity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                DatabaseReference reference;
+                if (operation.equals("addMembers")) {
+                    reference = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
+                }
 
+                else {
+                    reference = firebaseDatabase.getReference().child("groups").child(groupId).child("admins");
+                }
+
+                for (Student student : selectedStudents) {
+                    DatabaseReference reference1 = reference.child(student.getEmail().replace(".", "_"));
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", student.getEmail());
+                    map.put("joinedAt", ServerValue.TIMESTAMP);
+                    map.put("lastRead", 0l);
+                    reference1.setValue(map);
+                }
+
+                onBackPressed();
+                finish();
             }
         });
 
@@ -127,12 +165,19 @@ public class SelectUser extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                keyword = String.valueOf(charSequence);
+                keyword = String.valueOf(charSequence).toLowerCase();
                 students.clear();
                 keys1.clear();
                 selectUserAdapter.notifyDataSetChanged();
                 key = null;
-                searchUsers();
+
+                if (operation.equals("addMembers")) {
+                    searchUsers();
+                }
+
+                else {
+                    fetchMembers();
+                }
             }
 
             @Override
@@ -143,11 +188,10 @@ public class SelectUser extends AppCompatActivity {
     }
 
     public void searchUsers() {
+        isLoading = true;
         if (key == null) {
             query = firebaseDatabase.getReference().child("students").orderByKey().limitToFirst(100);
-        }
-
-        else {
+        } else {
             query = firebaseDatabase.getReference().child("students").orderByKey().limitToFirst(100).startAt(key);
         }
 
@@ -164,30 +208,23 @@ public class SelectUser extends AppCompatActivity {
 
                         else {
                             if (keyword == null || keyword.isEmpty()) {
-                                students.add(student);
-                                keys1.add(student.getId());
-                                selectUserAdapter.notifyItemInserted(students.size() - 1);
-                            }
-
-                            else {
+                                populate(student);
+                            } else {
                                 String name = student.getUserName().toLowerCase();
                                 String email = student.getEmail().toLowerCase();
 
                                 if (name.contains(keyword) || email.contains(keyword)) {
-                                    students.add(student);
-                                    keys1.add(student.getId());
-                                    selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                    populate(student);
                                 }
                             }
 
                         }
+
                         key = student.getId();
                     }
-
-                    if (students.isEmpty()){
-                        searchUsers();
-                    }
                     isLoading = false;
+                } else {
+                    searchUsers();
                 }
 
             }
@@ -197,6 +234,7 @@ public class SelectUser extends AppCompatActivity {
 
             }
         });
+
     }
 
     public void addUser(Student student){
@@ -241,30 +279,101 @@ public class SelectUser extends AppCompatActivity {
     }
 
     public void populate(Student student){
-        group.isJoined(new Group.SimpleCallback<Boolean>() {
-            @Override
-            public void callback(Boolean isJoined) {
-                if (!isJoined && operation.equals("addMembers")) {
-                    Log.e("myT", "here1");
-                    populate(student);
-                }
+        Query query = firebaseDatabase.getReference().child("groups").child("members").orderByChild("id").equalTo(student.getEmail());
 
-                else if (operation.equals("addAdmins") && isJoined){
-                    Log.e("myT", "here2");
-                    group.isAdmin(new Group.SimpleCallback<Boolean>() {
-                        @Override
-                        public void callback(Boolean isAdmin) {
-                            if (!isAdmin){
-                                populate(student);
-                            }
-                        }
-                    });
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                if (!snapshot.exists()){
+                    students.add(student);
+                    keys1.add(student.getId());
+                    selectUserAdapter.notifyItemInserted(students.size() - 1);
                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
             }
         });
     }
 
     public void Uncheck (Student student){
         selectUserAdapter.uncheck(student);
+    }
+
+    public void fetchMembers(){
+        isLoading = true;
+        if (key == null) {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().limitToFirst(2);
+        } else {
+            query = firebaseDatabase.getReference().child("groups").child(groupId).child("members").orderByKey().startAt(key).limitToFirst(2);
+        }
+
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        String id = snap.child("id").getValue().toString();
+                        Query query1 = firebaseDatabase.getReference().child("groups").child(groupId).child("admins").orderByChild("id").equalTo(id);
+                        query1.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                if (!snapshot.exists()) {
+                                    Query query2 = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(id);
+                                    query2.addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                            for (DataSnapshot snap : snapshot.getChildren()) {
+                                                Student student = snap.getValue(Student.class);
+
+                                                if (!keys1.contains(student.getEmail()) && !student.getEmail().equals(email)) {
+
+                                                    if (keyword == null || keyword.isEmpty()) {
+                                                        students.add(student);
+                                                        keys1.add(student.getEmail());
+                                                        selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                                    } else {
+                                                        String name = student.getUserName().toLowerCase();
+                                                        String email = student.getEmail().toLowerCase();
+
+                                                        if (name.contains(keyword) || email.contains(keyword)) {
+                                                            students.add(student);
+                                                            keys1.add(student.getEmail());
+                                                            selectUserAdapter.notifyItemInserted(students.size() - 1);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                                        }
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                            }
+                        });
+                        key = id.replace(".", "_");
+                    }
+                    isLoading = false;
+                }
+                else {
+                    fetchMembers();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
     }
 }

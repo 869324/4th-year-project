@@ -113,16 +113,37 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                                     conversation.getGroupLastRead(new Conversation.SimpleCallback<Long>() {
                                         @Override
                                         public void callback(Long lastRead) {
-                                            int count = 0;
-                                            for (DataSnapshot snap : snapshot.getChildren()){
-                                                Message message = snap.getValue(Message.class);
-                                                if(message.getSentAt() > lastRead && !message.getSenderId().equals(email)){
-                                                    count += 1;
+                                            if (lastRead > 0) {
+                                                int count = 0;
+                                                for (DataSnapshot snap : snapshot.getChildren()) {
+                                                    Message message = snap.getValue(Message.class);
+                                                    if (message.getSentAt() > lastRead && !message.getSenderId().equals(email)) {
+                                                        count += 1;
+                                                    }
+                                                }
+                                                if (count > 0) {
+                                                    holder.badgeCard.setVisibility(View.VISIBLE);
+                                                    holder.chatBadge.setText(String.valueOf(count));
                                                 }
                                             }
-                                            if (count > 0){
-                                                holder.badgeCard.setVisibility(View.VISIBLE);
-                                                holder.chatBadge.setText(String.valueOf(count));
+
+                                            else {
+                                                conversation.getJoinedAt(new Conversation.SimpleCallback<Long>() {
+                                                    @Override
+                                                    public void callback(Long joinedAt) {
+                                                        int count = 0;
+                                                        for (DataSnapshot snap : snapshot.getChildren()) {
+                                                            Message message = snap.getValue(Message.class);
+                                                            if (message.getSentAt() > joinedAt && !message.getSenderId().equals(email)) {
+                                                                count += 1;
+                                                            }
+                                                        }
+                                                        if (count > 0) {
+                                                            holder.badgeCard.setVisibility(View.VISIBLE);
+                                                            holder.chatBadge.setText(String.valueOf(count));
+                                                        }
+                                                    }
+                                                });
                                             }
                                         }
                                     });

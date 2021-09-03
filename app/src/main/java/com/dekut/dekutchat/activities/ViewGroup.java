@@ -35,6 +35,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import org.jetbrains.annotations.NotNull;
@@ -170,6 +171,8 @@ public class ViewGroup extends AppCompatActivity {
                         DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId).child("members");
                         Map<String, Object> map = new HashMap<>();
                         map.put("id", email);
+                        map.put("joinedAt", ServerValue.TIMESTAMP);
+                        map.put("lastRead", 0l);
                         reference.child(email.replace(".", "_")).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
