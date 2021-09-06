@@ -23,7 +23,6 @@
             android:windowSoftInputMode="adjustPan" />
         <activity android:name=".activities.CreatePoliticsPost" />
         <activity android:name=".activities.LoadMedia" />
-        <activity android:name=".activities.SelectMembers" />
         <activity android:name=".activities.ViewVideo" />
         <activity android:name=".activities.ViewGroup" />
         <activity android:name=".activities.CreateGroup" />

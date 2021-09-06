@@ -170,6 +170,7 @@ public class Chats extends Fragment {
                 searchUserProgressBar.setVisibility(View.GONE);
                 userRecyclerView.setAdapter(searchUserAdapter);
 
+                isLoading = true;
                 searchUsers();
 
                 userRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -366,7 +367,9 @@ public class Chats extends Fragment {
                     if (students.isEmpty()){
                         searchUsers();
                     }
-                    isLoading = false;
+                    else {
+                        isLoading = false;
+                    }
                 }
 
             }

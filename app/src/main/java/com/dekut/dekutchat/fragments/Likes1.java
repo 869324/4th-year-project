@@ -116,6 +116,7 @@ public class Likes1 extends Fragment {
         adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         recyclerView.setAdapter(adapter);
 
+        isLoading = true;
         fetchPosts();
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -172,6 +173,13 @@ public class Likes1 extends Fragment {
                                 }
                                 counter += 1;
                             }
+
+                        }
+
+                        if (posts.isEmpty()){
+                            fetchPosts();
+                        }
+                        else {
                             isLoading = false;
                         }
                     }
@@ -216,7 +224,13 @@ public class Likes1 extends Fragment {
                             }
                             counter += 1;
                         }
-                        isLoading = false;
+
+                        if (posts.isEmpty()){
+                            fetchPosts();
+                        }
+                        else {
+                            isLoading = false;
+                        }
                     }
                 }
 
@@ -238,11 +252,11 @@ public class Likes1 extends Fragment {
                 PoliticsPost politicsPost = snapshot.getValue(PoliticsPost.class);
                 for (PoliticsPost politicsPost1 : posts){
                     if (politicsPost.getId().equals(politicsPost1.getId())){
-                        Query query1 = firebaseDatabase.getReference().child("homePosts").child(politicsPost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
+                        Query query1 = firebaseDatabase.getReference().child("politicsPosts").child(politicsPost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
                         query1.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                if (snapshot.exists()){
+                                if (!snapshot.exists()){
                                     int index = posts.indexOf(politicsPost1);
                                     posts.remove(index);
                                     adapter.notifyItemRemoved(index);

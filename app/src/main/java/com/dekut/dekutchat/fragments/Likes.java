@@ -115,6 +115,7 @@ public class Likes extends Fragment {
         adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         recyclerView.setAdapter(adapter);
 
+        isLoading = true;
         fetchPosts();
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -138,7 +139,7 @@ public class Likes extends Fragment {
 
     public void fetchPosts(){
         if (timestamp == 0) {
-            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(100);
+            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(2);
 
             query.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -171,6 +172,12 @@ public class Likes extends Fragment {
                                 }
                                 counter += 1;
                             }
+                        }
+
+                        if (posts.isEmpty()){
+                            fetchPosts();
+                        }
+                        else {
                             isLoading = false;
                         }
                     }
@@ -184,7 +191,7 @@ public class Likes extends Fragment {
 
         }
         else {
-            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(100).endBefore(timestamp);
+            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(2).endBefore(timestamp);
             query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
@@ -215,7 +222,12 @@ public class Likes extends Fragment {
                             }
                             counter += 1;
                         }
-                        isLoading = false;
+                        if (posts.isEmpty()){
+                            fetchPosts();
+                        }
+                        else {
+                            isLoading = false;
+                        }
                     }
                 }
 
@@ -241,7 +253,7 @@ public class Likes extends Fragment {
                         query1.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                if (snapshot.exists()){
+                                if (!snapshot.exists()){
                                     int index = posts.indexOf(homePost1);
                                     posts.remove(index);
                                     adapter.notifyItemRemoved(index);

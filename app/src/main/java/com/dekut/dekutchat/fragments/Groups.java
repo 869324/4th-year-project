@@ -171,6 +171,7 @@ public class Groups extends Fragment {
                 searchUserProgressBar.setVisibility(View.INVISIBLE);
                 groupRecyclerView.setAdapter(searchGroupAdapter);
 
+                isLoading = true;
                 fetchGroups();
 
                 groupRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -301,7 +302,9 @@ public class Groups extends Fragment {
                     if (groups.isEmpty()){
                         fetchGroups();
                     }
-                    isLoading = false;
+                    else {
+                        isLoading = false;
+                    }
                 }
 
             }
@@ -324,28 +327,9 @@ public class Groups extends Fragment {
                     @Override
                     public void callback(Boolean isEligible) {
                         if (isEligible && !keys.contains(conversation.getConvoId())){
-
-                                conversations.add( conversation);
-                                keys.add(conversation.getConvoId());
-                                groupChatAdapter.notifyItemInserted(conversations.size() - 1);
-
-                                /*Query query1 = firebaseDatabase.getReference().child("groups").child(group.getGroupId()).child("members").orderByChild("id").equalTo(email);
-                                query1.addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                        if (!snapshot.exists()){
-                                            int index = conversations.indexOf(conversation);
-                                            conversations.remove(index);
-                                            groupChatAdapter.notifyItemRemoved(index);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                                    }
-                                });*/
-
+                            conversations.add( conversation);
+                            keys.add(conversation.getConvoId());
+                            groupChatAdapter.notifyItemInserted(conversations.size() - 1);
                         }
                     }
                 });
