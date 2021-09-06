@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.dekut.dekutchat.R;
 import com.dekut.dekutchat.activities.EditGroup;
+import com.dekut.dekutchat.activities.EditProfile;
 import com.dekut.dekutchat.activities.SelectUser;
 import com.dekut.dekutchat.utils.Group;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -35,11 +37,15 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ButtonsAdapter extends BaseAdapter {
     List<Map> entries;
@@ -128,21 +134,21 @@ public class ButtonsAdapter extends BaseAdapter {
                                 context.startActivity(intent);
                             }
 
-                            /*else if (text.equals("Add Password")){
-                                operation = "addMembers";
+                            else if (text.equals("Add Password")){
+                                showPasswordDialog(group, "Enter Password", "add");
                             }
                             else if (text.equals("Change Password")){
-                                operation = "addMembers";
+                                showPasswordDialog(group, "Enter Old Password", "change");
                             }
                             else if (text.equals("Remove Password")){
-                                operation = "addMembers";
-                            }*/
+                                showPasswordDialog(group, "Enter Password", "remove");
+                            }
                             else if (text.equals("Delete Group")){
                                 if (group.getPassword().isEmpty()){
                                     showDeleteDialog(group);
                                 }
                                 else {
-                                    showPasswordDialog(group);
+                                    showPasswordDialog(group, "Enter Password", "deleteGroup");
                                 }
                             }
                         }
@@ -162,13 +168,13 @@ public class ButtonsAdapter extends BaseAdapter {
 
     }
 
-    public void showPasswordDialog(Group group){
+    public void showPasswordDialog(Group group, String title, String op){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View view = layoutInflater.inflate(R.layout.entry_dialog2, null);
         builder.setView(view);
         EditText etItem = view.findViewById(R.id.etString);
         etItem.setTransformationMethod(PasswordTransformationMethod.getInstance());
-        builder.setTitle("Enter Password");
+        builder.setTitle(title);
         etItem.requestFocus();
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnOk = view.findViewById(R.id.btnOk);
@@ -181,12 +187,72 @@ public class ButtonsAdapter extends BaseAdapter {
                 if (password.isEmpty()) {
                     etItem.setError("Enter Password");
                 } else {
-                    if (password.equals(group.getPassword())) {
-                        showDeleteDialog(group);
+                    if (op.equals("deleteGroup")) {
+                        if (password.equals(group.getPassword())) {
+                            showDeleteDialog(group);
+                        } else {
+                            Toast.makeText(context, "You entered the wrong password", Toast.LENGTH_LONG).show();
+                        }
                     }
 
-                    else {
-                        Toast.makeText(context, "You entered the wrong password", Toast.LENGTH_LONG).show();
+                    else if (op.equals("add")){
+                        DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId).child("password");
+                        reference.setValue(password).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull @NotNull Task<Void> task) {
+                                if (task.isSuccessful()){
+                                    Toast.makeText(context, "Password has been updated", Toast.LENGTH_LONG).show();
+                                }
+                                else {
+                                    Toast.makeText(context, "Failed to update password, try again later", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
+                    }
+
+                    else if (op.equals("change")){
+                        if (title.equals("Enter Old Password")){
+                            if (password.equals(group.getPassword())){
+                                showPasswordDialog(group, "Enter New Password", "change");
+                            }
+                            else {
+                                Toast.makeText(context, "You entered the wrong password", Toast.LENGTH_LONG).show();
+                            }
+                        }
+
+                        else {
+                            DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId).child("password");
+                            reference.setValue(password).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull @NotNull Task<Void> task) {
+                                    if (task.isSuccessful()){
+                                        Toast.makeText(context, "Password has been changed", Toast.LENGTH_LONG).show();
+                                    }
+                                    else {
+                                        Toast.makeText(context, "Failed to change password, try again later", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    else if (op.equals("remove")){
+                        if (password.equals(group.getPassword())) {
+                            DatabaseReference reference = firebaseDatabase.getReference().child("groups").child(groupId).child("password");
+                            reference.setValue("").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull @NotNull Task<Void> task) {
+                                    if (task.isSuccessful()){
+                                        Toast.makeText(context, "Password has been removed", Toast.LENGTH_LONG).show();
+                                    }
+                                    else {
+                                        Toast.makeText(context, "Failed to remove password, try again later", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+                        } else {
+                            Toast.makeText(context, "You entered the wrong password", Toast.LENGTH_LONG).show();
+                        }
                     }
                     alertDialog.dismiss();
                 }

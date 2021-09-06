@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
@@ -52,12 +53,14 @@ public class Likes extends Fragment {
     LinearLayoutManager linearLayoutManager;
     HomeAdapter adapter;
     Context context;
-    Query query, query1;
+    Query query;
     List<HomePost> posts = new ArrayList<>();
     List<String> keys = new ArrayList<>();
     boolean isLoading = false;
     long timestamp = 0;
     String profileEmail;
+    int counter = 0;
+    boolean found = false;
 
     public Likes() {
         // Required empty public constructor
@@ -107,12 +110,8 @@ public class Likes extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setItemViewCacheSize(20);
 
-        if (email.equals(profileEmail)) {
-            adapter = new HomeAdapter(posts, context, profileEmail, true);
-        }
-        else {
-            adapter = new HomeAdapter(posts, context, profileEmail, false);
-        }
+
+        adapter = new HomeAdapter(posts, context, profileEmail, false);
         adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         recyclerView.setAdapter(adapter);
 
@@ -140,7 +139,7 @@ public class Likes extends Fragment {
     public void fetchPosts(){
         if (timestamp == 0) {
             query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(100);
-            query1 = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp").limitToLast(100);
+
             query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
@@ -150,9 +149,22 @@ public class Likes extends Fragment {
                             if (snap.exists()) {
                                 HomePost homePost = snap.getValue(HomePost.class);
                                 if (!keys.contains(homePost.getId()) && homePost.getPoster().equals(profileEmail)) {
-                                    posts.add(homePost);
-                                    keys.add(homePost.getId());
-                                    adapter.notifyItemInserted(posts.size());
+                                    Query query1 = firebaseDatabase.getReference().child("homePosts").child(homePost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
+                                    query1.addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                            if (snapshot.exists()){
+                                                posts.add(homePost);
+                                                keys.add(homePost.getId());
+                                                adapter.notifyItemInserted(posts.size());
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                                        }
+                                    });
                                 }
                                 if (counter == 0) {
                                     timestamp = homePost.getTimestamp();
@@ -177,13 +189,26 @@ public class Likes extends Fragment {
                 @Override
                 public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                     if (snapshot.exists()){
-                        int counter = 0;
                         for (DataSnapshot snap : snapshot.getChildren()){
                             HomePost homePost = snap.getValue(HomePost.class);
                             if (!keys.contains(homePost.getId()) && homePost.getPoster().equals(profileEmail)) {
-                                posts.add(counter, homePost);
-                                keys.add(counter, homePost.getId());
-                                adapter.notifyItemInserted(counter);
+                                Query query1 = firebaseDatabase.getReference().child("homePosts").child(homePost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
+                                query1.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                        if (snapshot.exists()){
+                                            posts.add(counter, homePost);
+                                            keys.add(counter, homePost.getId());
+                                            adapter.notifyItemInserted(counter);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                                    }
+                                });
+
                             }
                             if(counter == 0){
                                 timestamp = homePost.getTimestamp();
@@ -209,7 +234,33 @@ public class Likes extends Fragment {
 
             @Override
             public void onChildChanged(@NonNull @NotNull DataSnapshot snapshot, @Nullable @org.jetbrains.annotations.Nullable String previousChildName) {
+                HomePost homePost = snapshot.getValue(HomePost.class);
+                for (HomePost homePost1 : posts){
+                    if (homePost.getId().equals(homePost1.getId())){
+                        Query query1 = firebaseDatabase.getReference().child("homePosts").child(homePost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
+                        query1.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                if (snapshot.exists()){
+                                    int index = posts.indexOf(homePost1);
+                                    posts.remove(index);
+                                    adapter.notifyItemRemoved(index);
+                                    keys.remove(homePost1.getId());
+                                    found = true;
+                                }
+                            }
 
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                            }
+                        });
+
+                        if (found) {
+                            break;
+                        }
+                    }
+                }
             }
 
             @Override
