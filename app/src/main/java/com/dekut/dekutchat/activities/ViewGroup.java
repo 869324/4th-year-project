@@ -107,6 +107,7 @@ public class ViewGroup extends AppCompatActivity {
                                     userAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
                                     membersRecyclerView.setAdapter(userAdapter);
 
+                                    isLoading = true;
                                     fetchMembers();
 
                                     membersRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {

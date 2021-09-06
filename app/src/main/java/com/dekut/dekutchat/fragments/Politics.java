@@ -117,6 +117,7 @@ public class Politics extends Fragment {
             adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
             recyclerView.setAdapter(adapter);
 
+            isLoading = true;
             fetchPosts();
 
             fabPolitics.setOnClickListener(new View.OnClickListener() {

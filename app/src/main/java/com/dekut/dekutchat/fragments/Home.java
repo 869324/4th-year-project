@@ -118,6 +118,7 @@ public class Home extends Fragment {
             adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
             recyclerView.setAdapter(adapter);
 
+            isLoading = true;
             fetchPosts();
 
             fabHome.setOnClickListener(new View.OnClickListener() {

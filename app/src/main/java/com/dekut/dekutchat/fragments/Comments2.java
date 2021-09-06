@@ -3,6 +3,8 @@ package com.dekut.dekutchat.fragments;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,10 +15,17 @@ import android.view.ViewGroup;
 
 import com.dekut.dekutchat.R;
 import com.dekut.dekutchat.adapters.HomeAdapter;
-import com.dekut.dekutchat.utils.HomePost;
+import com.dekut.dekutchat.adapters.PoliticsAdapter;
+import com.dekut.dekutchat.utils.PoliticsPost;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,14 +50,16 @@ public class Comments2 extends Fragment {
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     RecyclerView recyclerView;
     LinearLayoutManager linearLayoutManager;
-    HomeAdapter adapter;
+    PoliticsAdapter adapter;
     Context context;
-    Query query, query1;
-    List<HomePost> posts = new ArrayList<>();
+    Query query;
+    List<PoliticsPost> posts = new ArrayList<>();
     List<String> keys = new ArrayList<>();
     boolean isLoading = false;
     long timestamp = 0;
     String profileEmail;
+    int counter = 0;
+    boolean found = false;
 
     public Comments2() {
         // Required empty public constructor
@@ -86,9 +97,195 @@ public class Comments2 extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_comments2, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        context = container.getContext();
+        View view = inflater.inflate(R.layout.fragment_comments2, container, false);
+
+        recyclerView = view.findViewById((R.id.recyclerView));
+
+        linearLayoutManager = new LinearLayoutManager(context);
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setItemViewCacheSize(20);
+
+
+        adapter = new PoliticsAdapter(posts, context, profileEmail, false);
+        adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+        recyclerView.setAdapter(adapter);
+
+        isLoading = true;
+        fetchPosts();
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                int lastPosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
+
+                if (lastPosition < 2){
+                    if (!isLoading){
+                        isLoading = true;
+                        fetchPosts();
+                    }
+                }
+            }
+        });
+
+        return view;
+    }
+
+    public void fetchPosts() {
+        if (timestamp == 0) {
+            query = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp").limitToLast(2);
+
+            query.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        int counter = 0;
+                        for (DataSnapshot snap : snapshot.getChildren()) {
+                            if (snap.exists()) {
+                                PoliticsPost politicsPost = snap.getValue(PoliticsPost.class);
+                                if (!keys.contains(politicsPost.getId()) && politicsPost.getPoster().equals(profileEmail)) {
+                                    Query query1 = firebaseDatabase.getReference().child("politicsPosts").child(politicsPost.getId()).child("comments").orderByChild("posterId").equalTo(profileEmail);
+                                    query1.addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                            if (snapshot.exists()) {
+                                                posts.add(politicsPost);
+                                                keys.add(politicsPost.getId());
+                                                adapter.notifyItemInserted(posts.size());
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                                        }
+                                    });
+                                }
+                                if (counter == 0) {
+                                    timestamp = politicsPost.getTimestamp();
+                                }
+                                counter += 1;
+                            }
+                            isLoading = false;
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                }
+            });
+
+        } else {
+            query = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp").limitToLast(2).endBefore(timestamp);
+            query.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        for (DataSnapshot snap : snapshot.getChildren()) {
+                            PoliticsPost politicsPost = snap.getValue(PoliticsPost.class);
+                            if (!keys.contains(politicsPost.getId()) && politicsPost.getPoster().equals(profileEmail)) {
+                                Query query1 = firebaseDatabase.getReference().child("politicsPosts").child(politicsPost.getId()).child("likes").orderByChild("posterId").equalTo(profileEmail);
+                                query1.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                        if (snapshot.exists()) {
+                                            posts.add(counter, politicsPost);
+                                            keys.add(counter, politicsPost.getId());
+                                            adapter.notifyItemInserted(counter);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                                    }
+                                });
+
+                            }
+                            if (counter == 0) {
+                                timestamp = politicsPost.getTimestamp();
+                            }
+                            counter += 1;
+                        }
+                        isLoading = false;
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                }
+            });
+        }
+
+        query.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull @NotNull DataSnapshot snapshot, @Nullable @org.jetbrains.annotations.Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull @NotNull DataSnapshot snapshot, @Nullable @org.jetbrains.annotations.Nullable String previousChildName) {
+                PoliticsPost politicsPost = snapshot.getValue(PoliticsPost.class);
+                for (PoliticsPost politicsPost1 : posts) {
+                    if (politicsPost.getId().equals(politicsPost1.getId())) {
+                        Query query1 = firebaseDatabase.getReference().child("politicsPosts").child(politicsPost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
+                        query1.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                if (!snapshot.exists()) {
+                                    int index = posts.indexOf(politicsPost1);
+                                    posts.remove(index);
+                                    adapter.notifyItemRemoved(index);
+                                    keys.remove(politicsPost1.getId());
+                                    found = true;
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                            }
+                        });
+
+                        if (found) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull @NotNull DataSnapshot snapshot) {
+                PoliticsPost politicsPost = snapshot.getValue(PoliticsPost.class);
+                for (PoliticsPost politicsPost1 : posts) {
+                    if (politicsPost.getId().equals(politicsPost1.getId())) {
+                        int index = posts.indexOf(politicsPost1);
+                        posts.remove(index);
+                        adapter.notifyItemRemoved(index);
+                        keys.remove(politicsPost1.getId());
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onChildMoved(@NonNull @NotNull DataSnapshot snapshot, @Nullable @org.jetbrains.annotations.Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
     }
 }

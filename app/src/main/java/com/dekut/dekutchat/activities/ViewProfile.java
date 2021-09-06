@@ -17,6 +17,7 @@ import com.dekut.dekutchat.R;
 import com.dekut.dekutchat.adapters.ProfilePagerAdapter;
 import com.dekut.dekutchat.fragments.Comments1;
 import com.dekut.dekutchat.fragments.Comments2;
+import com.dekut.dekutchat.fragments.Groups1;
 import com.dekut.dekutchat.fragments.Home1;
 import com.dekut.dekutchat.fragments.Likes;
 import com.dekut.dekutchat.fragments.Likes1;
@@ -72,6 +73,7 @@ public class ViewProfile extends AppCompatActivity {
         profilePagerAdapter.addFragment(new Likes1(profileEmail), "Politics Likes");
         profilePagerAdapter.addFragment(new Comments1(profileEmail), "Home Comments");
         profilePagerAdapter.addFragment(new Comments2(profileEmail), "Politics Comments");
+        profilePagerAdapter.addFragment(new Groups1(profileEmail), "Groups");
         viewPager.setAdapter(profilePagerAdapter);
 
         tabLayout.setupWithViewPager(viewPager);

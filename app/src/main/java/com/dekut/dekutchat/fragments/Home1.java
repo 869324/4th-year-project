@@ -118,6 +118,7 @@ public class Home1 extends Fragment {
         adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         recyclerView.setAdapter(adapter);
 
+        isLoading = true;
         fetchPosts();
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -165,6 +166,13 @@ public class Home1 extends Fragment {
                                 }
                                 counter += 1;
                             }
+
+                        }
+
+                        if (posts.isEmpty()){
+                            fetchPosts();
+                        }
+                        else {
                             isLoading = false;
                         }
                     }
@@ -195,7 +203,13 @@ public class Home1 extends Fragment {
                             }
                             counter += 1;
                         }
-                        isLoading = false;
+
+                        if (posts.isEmpty()) {
+                            fetchPosts();
+                        }
+                        else {
+                            isLoading = false;
+                        }
                     }
                 }
 
