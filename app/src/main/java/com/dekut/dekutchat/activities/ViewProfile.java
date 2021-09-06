@@ -16,8 +16,10 @@ import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.R;
 import com.dekut.dekutchat.adapters.ProfilePagerAdapter;
 import com.dekut.dekutchat.fragments.Comments1;
+import com.dekut.dekutchat.fragments.Comments2;
 import com.dekut.dekutchat.fragments.Home1;
 import com.dekut.dekutchat.fragments.Likes;
+import com.dekut.dekutchat.fragments.Likes1;
 import com.dekut.dekutchat.fragments.Politics1;
 import com.dekut.dekutchat.utils.Student;
 import com.google.android.material.tabs.TabLayout;
@@ -66,8 +68,10 @@ public class ViewProfile extends AppCompatActivity {
         profilePagerAdapter = new ProfilePagerAdapter(getSupportFragmentManager());
         profilePagerAdapter.addFragment(new Home1(profileEmail), "Home");
         profilePagerAdapter.addFragment(new Politics1(profileEmail), "Politics");
-        profilePagerAdapter.addFragment(new Likes(profileEmail), "Likes");
-        profilePagerAdapter.addFragment(new Comments1(profileEmail), "Comments");
+        profilePagerAdapter.addFragment(new Likes(profileEmail), "Home Likes");
+        profilePagerAdapter.addFragment(new Likes1(profileEmail), "Politics Likes");
+        profilePagerAdapter.addFragment(new Comments1(profileEmail), "Home Comments");
+        profilePagerAdapter.addFragment(new Comments2(profileEmail), "Politics Comments");
         viewPager.setAdapter(profilePagerAdapter);
 
         tabLayout.setupWithViewPager(viewPager);
