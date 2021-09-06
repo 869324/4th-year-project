@@ -172,7 +172,13 @@ public class Comments2 extends Fragment {
                                 }
                                 counter += 1;
                             }
-                            isLoading = false;
+
+                            if (posts.isEmpty()){
+                                fetchPosts();
+                            }
+                            else {
+                                isLoading = false;
+                            }
                         }
                     }
                 }
@@ -215,7 +221,13 @@ public class Comments2 extends Fragment {
                             }
                             counter += 1;
                         }
-                        isLoading = false;
+
+                        if (posts.isEmpty()){
+                            fetchPosts();
+                        }
+                        else {
+                            isLoading = false;
+                        }
                     }
                 }
 

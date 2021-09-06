@@ -60,7 +60,6 @@ public class Likes extends Fragment {
     long timestamp = 0;
     String profileEmail;
     int counter = 0;
-    boolean found = false;
 
     public Likes() {
         // Required empty public constructor
@@ -139,7 +138,7 @@ public class Likes extends Fragment {
 
     public void fetchPosts(){
         if (timestamp == 0) {
-            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(2);
+            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(100);
 
             query.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -157,7 +156,7 @@ public class Likes extends Fragment {
                                             if (snapshot.exists()){
                                                 posts.add(homePost);
                                                 keys.add(homePost.getId());
-                                                adapter.notifyItemInserted(posts.size());
+                                                adapter.notifyItemInserted(posts.size() - 1);
                                             }
                                         }
 
@@ -191,7 +190,7 @@ public class Likes extends Fragment {
 
         }
         else {
-            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(2).endBefore(timestamp);
+            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(100).endBefore(timestamp);
             query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
@@ -258,7 +257,7 @@ public class Likes extends Fragment {
                                     posts.remove(index);
                                     adapter.notifyItemRemoved(index);
                                     keys.remove(homePost1.getId());
-                                    found = true;
+
                                 }
                             }
 
@@ -268,9 +267,7 @@ public class Likes extends Fragment {
                             }
                         });
 
-                        if (found) {
-                            break;
-                        }
+                        break;
                     }
                 }
             }

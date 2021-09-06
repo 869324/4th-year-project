@@ -158,7 +158,7 @@ public class Likes1 extends Fragment {
                                             if (snapshot.exists()){
                                                 posts.add(politicsPost);
                                                 keys.add(politicsPost.getId());
-                                                adapter.notifyItemInserted(posts.size());
+                                                adapter.notifyItemInserted(posts.size() - 1);
                                             }
                                         }
 
@@ -261,7 +261,6 @@ public class Likes1 extends Fragment {
                                     posts.remove(index);
                                     adapter.notifyItemRemoved(index);
                                     keys.remove(politicsPost1.getId());
-                                    found = true;
                                 }
                             }
 
@@ -271,9 +270,7 @@ public class Likes1 extends Fragment {
                             }
                         });
 
-                        if (found) {
-                            break;
-                        }
+                        break;
                     }
                 }
             }
