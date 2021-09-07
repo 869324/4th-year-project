@@ -566,6 +566,7 @@ public class EditProfile extends AppCompatActivity {
                                     btnOk.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
+                                            String password = etItem.getText().toString();
                                             if (password.length() < 6){
                                                 etItem.setError("Password must be at least 6 characters");
                                             }

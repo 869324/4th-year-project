@@ -55,7 +55,6 @@ public class Likes extends Fragment {
     Query query;
     List<HomePost> posts = new ArrayList<>();
     List<String> keys = new ArrayList<>();
-    boolean isLoading = false;
     String profileEmail;
 
     public Likes() {
@@ -111,24 +110,7 @@ public class Likes extends Fragment {
         adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         recyclerView.setAdapter(adapter);
 
-        isLoading = true;
         fetchPosts();
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                int lastPosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
-
-                if (lastPosition < 2){
-                    if (!isLoading){
-                        isLoading = true;
-                        fetchPosts();
-                    }
-                }
-            }
-        });
 
         return view;
     }
