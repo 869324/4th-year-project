@@ -179,7 +179,7 @@ public class Home extends Fragment {
                             if (!keys.contains(homePost.getId())) {
                                 posts.add(homePost);
                                 keys.add(homePost.getId());
-                                adapter.notifyItemInserted(posts.size());
+                                adapter.notifyItemInserted(posts.size() - 1);
 
                                 if(counter == 0){
                                     timestamp = homePost.getTimestamp();

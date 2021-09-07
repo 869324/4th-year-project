@@ -44,7 +44,7 @@ public class ViewProfile extends AppCompatActivity {
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     Query query;
     Student student;
-    String key, previousUrl;
+    String key, previousUrl, status = "owner";
     ProfilePagerAdapter profilePagerAdapter;
 
     @Override
@@ -78,18 +78,19 @@ public class ViewProfile extends AppCompatActivity {
 
         tabLayout.setupWithViewPager(viewPager);
 
-        if(profileEmail.equals(email)){
-            editProfile.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(getApplicationContext(), EditProfile.class);
-                    startActivity(intent);
-                }
-            });
+        if(!profileEmail.equals(email)){
+            editProfile.setText("View Profile");
+            status = "guest";
         }
-        else {
-            editProfile.setVisibility(View.INVISIBLE);
-        }
+
+        editProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), EditProfile.class);
+                intent.putExtra("status", status);
+                startActivity(intent);
+            }
+        });
 
         profilePic.setOnClickListener(new View.OnClickListener() {
             @Override

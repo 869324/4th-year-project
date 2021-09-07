@@ -140,7 +140,7 @@ public class Groups1 extends Fragment {
 
     public void fetchGroups(){
         if (key == null) {
-            query = firebaseDatabase.getReference().child("groups").orderByKey().limitToFirst(2);
+            query = firebaseDatabase.getReference().child("groups").orderByKey().limitToFirst(100);
 
             query.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -190,7 +190,7 @@ public class Groups1 extends Fragment {
 
         }
         else {
-            query = firebaseDatabase.getReference().child("groups").orderByKey().limitToFirst(2).startAfter(key);
+            query = firebaseDatabase.getReference().child("groups").orderByKey().limitToFirst(100).startAfter(key);
             query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {

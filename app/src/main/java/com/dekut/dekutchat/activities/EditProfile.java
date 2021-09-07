@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.R;
+import com.dekut.dekutchat.utils.Group;
 import com.dekut.dekutchat.utils.Student;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -42,6 +43,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -52,6 +54,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -69,14 +73,14 @@ public class EditProfile extends AppCompatActivity {
     ImageButton editUsername, editRegNo, editCourse;
     TextView tvUsername, tvReg, tvEmail, tvCourse;
     ProgressBar progressBar;
-    Button btnDeleteAccount;
+    Button btnDeleteAccount, btnChangePassword;
 
     String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
     Query query;
     Student student;
     int pickImageCamera = 1, pickImageGallery = 2, requestCamera = 3, requestGallery = 4;
     Uri selectedImage;
-    String key, previousUrl, name, currentPhotoPath;
+    String key, previousUrl, name, currentPhotoPath, status;
     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
@@ -103,6 +107,19 @@ public class EditProfile extends AppCompatActivity {
             editCourse = findViewById(R.id.editCourse);
             editPic = findViewById(R.id.editPic);
             btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
+            btnChangePassword = findViewById(R.id.btnChangePassword);
+
+            Bundle extras = getIntent().getExtras();
+            status = extras.getString("status");
+
+            if (status.equals("guest")) {
+                editPic.setVisibility(View.INVISIBLE);
+                editUsername.setVisibility(View.INVISIBLE);
+                editRegNo.setVisibility(View.INVISIBLE);
+                editCourse.setVisibility(View.INVISIBLE);
+                btnDeleteAccount.setVisibility(View.INVISIBLE);
+                btnChangePassword.setVisibility(View.INVISIBLE);
+            }
 
             fetchData();
 
@@ -146,94 +163,17 @@ public class EditProfile extends AppCompatActivity {
             btnDeleteAccount.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(EditProfile.this);
-                    LayoutInflater inflater = getLayoutInflater();
-                    View view = inflater.inflate(R.layout.entry_dialog2, null);
-                    builder.setView(view);
-                    EditText etItem = view.findViewById(R.id.etString);
-                    etItem.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                    builder.setTitle("Enter Password");
-                    etItem.requestFocus();
-                    Button btnCancel = view.findViewById(R.id.btnCancel);
-                    Button btnOk = view.findViewById(R.id.btnOk);
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
-                    btnOk.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            String password = etItem.getText().toString();
-                            if (password.isEmpty()) {
-                                etItem.setError("Enter Password");
-                            } else {
-                                Dialog deleteDialog = new Dialog(EditProfile.this);
-                                deleteDialog.setContentView(R.layout.delete_dialog2);
-                                deleteDialog.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                deleteDialog.setCancelable(false);
-                                Button btnCancel = deleteDialog.findViewById(R.id.btnCancel);
-                                Button btnDelete = deleteDialog.findViewById(R.id.btnDelete);
-
-                                deleteDialog.show();
-
-                                btnCancel.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        deleteDialog.dismiss();
-                                        alertDialog.dismiss();
-                                    }
-                                });
-
-                                btnDelete.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        ProgressDialog progressDialog = new ProgressDialog(EditProfile.this);
-                                        progressDialog.show();
-                                        progressDialog.setContentView(R.layout.progress_dialog);
-                                        progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-
-                                        firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                                if (task.isSuccessful()) {
-                                                    DatabaseReference reference = firebaseDatabase.getReference().child("students").child(key);
-                                                    reference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if (task.isSuccessful()) {
-                                                                firebaseAuth.getCurrentUser().delete();
-                                                                firebaseAuth.signOut();
-                                                                Toast.makeText(getApplicationContext(), "Your Account has been deleted", Toast.LENGTH_LONG).show();
-                                                                Intent intent = new Intent(EditProfile.this, Login.class);
-                                                                startActivity(intent);
-                                                                finish();
-                                                            } else {
-                                                                Toast.makeText(getApplicationContext(), "Deletion failed. Try again later", Toast.LENGTH_LONG).show();
-                                                            }
-                                                        }
-                                                    });
-                                                } else {
-                                                    progressDialog.dismiss();
-                                                    deleteDialog.dismiss();
-                                                    Toast.makeText(getBaseContext(), "Failed, check password and try again later", Toast.LENGTH_LONG).show();
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-
-                                alertDialog.dismiss();
-                            }
-                        }
-                    });
-
-                    btnCancel.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            alertDialog.dismiss();
-                        }
-                    });
-
+                    showPasswordDialog("Enter Password", "delete");
                 }
             });
+
+            btnChangePassword.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showPasswordDialog("Enter Password", "change");
+                }
+            });
+
         }catch (Exception ex){
             Log.e("myTag", "edit: "+ ex.getMessage());
         }
@@ -590,5 +530,139 @@ public class EditProfile extends AppCompatActivity {
 
         currentPhotoPath = image.getAbsolutePath();
         return image;
+    }
+
+    public void showPasswordDialog(String title, String op) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(EditProfile.this);
+        View view = getLayoutInflater().inflate(R.layout.entry_dialog2, null);
+        builder.setView(view);
+        EditText etItem = view.findViewById(R.id.etString);
+        etItem.setTransformationMethod(PasswordTransformationMethod.getInstance());
+        builder.setTitle(title);
+        etItem.requestFocus();
+        Button btnCancel = view.findViewById(R.id.btnCancel);
+        Button btnOk = view.findViewById(R.id.btnOk);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String password = etItem.getText().toString();
+                if (password.isEmpty()) {
+                    etItem.setError("Enter Password");
+                } else {
+                    if (op.equals("delete")) {
+                        alertDialog.dismiss();
+                        showAlertDialog(password);
+                    }
+
+                    else if (op.equals("change")) {
+                        if (title.equals("Enter Password")) {
+                            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                @Override
+                                public void onSuccess(AuthResult authResult) {
+                                    etItem.setText("");
+                                    alertDialog.setTitle("Enter New Password");
+                                    btnOk.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            if (password.length() < 6){
+                                                etItem.setError("Password must be at least 6 characters");
+                                            }
+                                            else {
+                                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                                user.updatePassword(password).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        Toast.makeText(EditProfile.this, "Password has been updated", Toast.LENGTH_LONG).show();
+                                                        alertDialog.dismiss();
+                                                    }
+                                                }).addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull @NotNull Exception e) {
+                                                        alertDialog.dismiss();
+                                                        Toast.makeText(EditProfile.this, "Failed to update password, try again later", Toast.LENGTH_LONG).show();
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull @NotNull Exception e) {
+                                    alertDialog.dismiss();
+                                    Toast.makeText(EditProfile.this, "Failed to validate password", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+
+                }
+            }
+        });
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+            }
+        });
+    }
+
+    public void showAlertDialog(String password){
+        Dialog deleteDialog = new Dialog(EditProfile.this);
+        deleteDialog.setContentView(R.layout.delete_dialog2);
+        deleteDialog.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        deleteDialog.setCancelable(false);
+        Button btnCancel = deleteDialog.findViewById(R.id.btnCancel);
+        Button btnDelete = deleteDialog.findViewById(R.id.btnDelete);
+
+        deleteDialog.show();
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteDialog.dismiss();
+            }
+        });
+
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ProgressDialog progressDialog = new ProgressDialog(EditProfile.this);
+                progressDialog.show();
+                progressDialog.setContentView(R.layout.progress_dialog);
+                progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+                firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            DatabaseReference reference = firebaseDatabase.getReference().child("students").child(key);
+                            reference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        firebaseAuth.getCurrentUser().delete();
+                                        firebaseAuth.signOut();
+                                        Toast.makeText(getApplicationContext(), "Your Account has been deleted", Toast.LENGTH_LONG).show();
+                                        Intent intent = new Intent(EditProfile.this, Login.class);
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "Deletion failed. Try again later", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+                        } else {
+                            progressDialog.dismiss();
+                            deleteDialog.dismiss();
+                            Toast.makeText(getBaseContext(), "Failed, check password and try again later", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        });
     }
 }

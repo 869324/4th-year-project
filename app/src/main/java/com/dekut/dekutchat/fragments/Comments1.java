@@ -137,109 +137,30 @@ public class Comments1 extends Fragment {
     }
 
     public void fetchPosts() {
-        if (timestamp == 0) {
-            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(2);
-
-            query.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        int counter = 0;
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-                            if (snap.exists()) {
-                                HomePost homePost = snap.getValue(HomePost.class);
-                                if (!keys.contains(homePost.getId()) && homePost.getPoster().equals(profileEmail)) {
-                                    Query query1 = firebaseDatabase.getReference().child("homePosts").child(homePost.getId()).child("comments").orderByChild("posterId").equalTo(profileEmail);
-                                    query1.addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                            if (snapshot.exists()) {
-                                                posts.add(homePost);
-                                                keys.add(homePost.getId());
-                                                adapter.notifyItemInserted(posts.size());
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                                        }
-                                    });
-                                }
-                                if (counter == 0) {
-                                    timestamp = homePost.getTimestamp();
-                                }
-                                counter += 1;
-                            }
-                        }
-                        if (posts.isEmpty()){
-                            fetchPosts();
-                        }
-                        else {
-                            isLoading = false;
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                }
-            });
-
-        } else {
-            query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp").limitToLast(2).endBefore(timestamp);
-            query.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-                            HomePost homePost = snap.getValue(HomePost.class);
-                            if (!keys.contains(homePost.getId()) && homePost.getPoster().equals(profileEmail)) {
-                                Query query1 = firebaseDatabase.getReference().child("homePosts").child(homePost.getId()).child("likes").orderByChild("posterId").equalTo(profileEmail);
-                                query1.addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                        if (snapshot.exists()) {
-                                            posts.add(counter, homePost);
-                                            keys.add(counter, homePost.getId());
-                                            adapter.notifyItemInserted(counter);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                                    }
-                                });
-
-                            }
-                            if (counter == 0) {
-                                timestamp = homePost.getTimestamp();
-                            }
-                            counter += 1;
-                        }
-
-                        if (posts.isEmpty()){
-                            fetchPosts();
-                        }
-                        else {
-                            isLoading = false;
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                }
-            });
-        }
+        query = firebaseDatabase.getReference().child("homePosts").orderByChild("timestamp");
 
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull @NotNull DataSnapshot snapshot, @Nullable @org.jetbrains.annotations.Nullable String previousChildName) {
+            HomePost homePost = snapshot.getValue(HomePost.class);
+            if (!keys.contains(homePost.getId())) {
+                Query query1 = firebaseDatabase.getReference().child("homePosts").child(homePost.getId()).child("comments").orderByChild("posterId").equalTo(profileEmail);
+                query1.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            posts.add(homePost);
+                            keys.add(homePost.getId());
+                            adapter.notifyItemInserted(posts.size());
+                        }
+                    }
 
+                    @Override
+                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                    }
+                });
+            }
             }
 
             @Override
