@@ -54,11 +54,7 @@ public class Comments1 extends Fragment {
     Query query;
     List<HomePost> posts = new ArrayList<>();
     List<String> keys = new ArrayList<>();
-    boolean isLoading = false;
-    long timestamp = 0;
     String profileEmail;
-    int counter = 0;
-    boolean found = false;
 
     public Comments1() {
         // Required empty public constructor
@@ -114,24 +110,7 @@ public class Comments1 extends Fragment {
         adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         recyclerView.setAdapter(adapter);
 
-        isLoading = true;
         fetchPosts();
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                int lastPosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
-
-                if (lastPosition < 2){
-                    if (!isLoading){
-                        isLoading = true;
-                        fetchPosts();
-                    }
-                }
-            }
-        });
 
         return view;
     }
@@ -151,7 +130,7 @@ public class Comments1 extends Fragment {
                         if (snapshot.exists()) {
                             posts.add(homePost);
                             keys.add(homePost.getId());
-                            adapter.notifyItemInserted(posts.size());
+                            adapter.notifyItemInserted(posts.size() - 1);
                         }
                     }
 
@@ -177,7 +156,6 @@ public class Comments1 extends Fragment {
                                     posts.remove(index);
                                     adapter.notifyItemRemoved(index);
                                     keys.remove(homePost1.getId());
-                                    found = true;
                                 }
                             }
 
@@ -187,9 +165,7 @@ public class Comments1 extends Fragment {
                             }
                         });
 
-                        if (found) {
-                            break;
-                        }
+                        break;
                     }
                 }
             }

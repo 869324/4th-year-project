@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -92,7 +93,34 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                             String deliveryDate = getTime.getDate(lastMessage.getSentAt());
                             String currentDate = getTime.getDate(System.currentTimeMillis());
 
-                            holder.tvLastMsg.setText(lastMessage.getText());
+                            if(lastMessage.getMessageType().equals("text")){
+                                holder.imageView.setVisibility(View.GONE);
+                                holder.tvLastMsg.setText(lastMessage.getText());
+                            }
+
+                            else if(lastMessage.getMessageType().equals("file")){
+                                holder.imageView.setVisibility(View.VISIBLE);
+                                holder.imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_file));
+                                if (lastMessage.getText() != null){
+                                    holder.tvLastMsg.setText(lastMessage.getText());
+                                }
+                            }
+
+                            else if(lastMessage.getMessageType().equals("video")){
+                                holder.imageView.setVisibility(View.VISIBLE);
+                                holder.imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_video_library));
+                                if (lastMessage.getText() != null){
+                                    holder.tvLastMsg.setText(lastMessage.getText());
+                                }
+                            }
+
+                            else {
+                                holder.imageView.setVisibility(View.VISIBLE);
+                                holder.imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_gallery));
+                                if (lastMessage.getText() != null){
+                                    holder.tvLastMsg.setText(lastMessage.getText());
+                                }
+                            }
 
                             if (currentDate.equals(deliveryDate)) {
                                 holder.tvDeliveryTime.setText(deliveryTime);
@@ -192,7 +220,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvChatName, tvLastMsg, tvDeliveryTime, chatBadge;
-        ImageView profilePic;
+        ImageView profilePic, imageView;
         CardView badgeCard;
 
         public ViewHolder(@NonNull View itemView) {
@@ -203,6 +231,8 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
             tvDeliveryTime = itemView.findViewById(R.id.tvDeliveryTime);
             chatBadge = itemView.findViewById(R.id.chatBadge);
             badgeCard = itemView.findViewById(R.id.badgeCard);
+            imageView= itemView.findViewById(R.id.imageView);
+
             badgeCard.setVisibility(View.INVISIBLE);
         }
     }

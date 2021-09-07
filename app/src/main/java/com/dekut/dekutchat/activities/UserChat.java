@@ -487,19 +487,7 @@ public class UserChat extends AppCompatActivity {
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                /*Message message = snapshot.getValue(Message.class);
-                message.setConvoId(convoId);
-                for(Message message1 : messageList){
-                    String id1 = message.getId();
-                    String id2 = message1.getId();
-                    if(id1.equals(id2)){
-                        int index = messageList.indexOf(message1);
-                        messageList.remove(index);
-                        messageList.add(index, message);
-                        convoAdapter.notifyItemChanged(index);
-                        break;
-                    }
-                }*/
+
             }
 
             @Override

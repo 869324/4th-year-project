@@ -55,11 +55,7 @@ public class Comments2 extends Fragment {
     Query query;
     List<PoliticsPost> posts = new ArrayList<>();
     List<String> keys = new ArrayList<>();
-    boolean isLoading = false;
-    long timestamp = 0;
     String profileEmail;
-    int counter = 0;
-    boolean found = false;
 
     public Comments2() {
         // Required empty public constructor
@@ -115,30 +111,13 @@ public class Comments2 extends Fragment {
         adapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         recyclerView.setAdapter(adapter);
 
-        isLoading = true;
         fetchPosts();
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                int lastPosition = linearLayoutManager.findLastCompletelyVisibleItemPosition();
-
-                if (lastPosition < 2){
-                    if (!isLoading){
-                        isLoading = true;
-                        fetchPosts();
-                    }
-                }
-            }
-        });
 
         return view;
     }
 
     public void fetchPosts() {
-        query = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp").limitToLast(2);
+        query = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp");
 
         query.addChildEventListener(new ChildEventListener() {
             @Override
@@ -152,7 +131,7 @@ public class Comments2 extends Fragment {
                             if (snapshot.exists()) {
                                 posts.add(politicsPost);
                                 keys.add(politicsPost.getId());
-                                adapter.notifyItemInserted(posts.size());
+                                adapter.notifyItemInserted(posts.size() - 1);
                             }
                         }
 
