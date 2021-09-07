@@ -59,8 +59,6 @@ public class Likes1 extends Fragment {
     boolean isLoading = false;
     long timestamp = 0;
     String profileEmail;
-    int counter = 0;
-    boolean found = false;
 
     public Likes1() {
         // Required empty public constructor
@@ -139,112 +137,31 @@ public class Likes1 extends Fragment {
     }
 
     public void fetchPosts(){
-        if (timestamp == 0) {
-            query = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp").limitToLast(100);
-
-            query.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                    if (snapshot.exists()){
-                        int counter = 0;
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-                            if (snap.exists()) {
-                                PoliticsPost politicsPost = snap.getValue(PoliticsPost.class);
-                                if (!keys.contains(politicsPost.getId()) && politicsPost.getPoster().equals(profileEmail)) {
-                                    Query query1 = firebaseDatabase.getReference().child("politicsPosts").child(politicsPost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
-                                    query1.addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                            if (snapshot.exists()){
-                                                posts.add(politicsPost);
-                                                keys.add(politicsPost.getId());
-                                                adapter.notifyItemInserted(posts.size() - 1);
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                                        }
-                                    });
-                                }
-                                if (counter == 0) {
-                                    timestamp = politicsPost.getTimestamp();
-                                }
-                                counter += 1;
-                            }
-
-                        }
-
-                        if (posts.isEmpty()){
-                            fetchPosts();
-                        }
-                        else {
-                            isLoading = false;
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                }
-            });
-
-        }
-        else {
-            query = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp").limitToLast(100).endBefore(timestamp);
-            query.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                    if (snapshot.exists()){
-                        for (DataSnapshot snap : snapshot.getChildren()){
-                            PoliticsPost politicsPost = snap.getValue(PoliticsPost.class);
-                            if (!keys.contains(politicsPost.getId()) && politicsPost.getPoster().equals(profileEmail)) {
-                                Query query1 = firebaseDatabase.getReference().child("politicsPosts").child(politicsPost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
-                                query1.addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                        if (snapshot.exists()){
-                                            posts.add(counter, politicsPost);
-                                            keys.add(counter, politicsPost.getId());
-                                            adapter.notifyItemInserted(counter);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                                    }
-                                });
-
-                            }
-                            if(counter == 0){
-                                timestamp = politicsPost.getTimestamp();
-                            }
-                            counter += 1;
-                        }
-
-                        if (posts.isEmpty()){
-                            fetchPosts();
-                        }
-                        else {
-                            isLoading = false;
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                }
-            });
-        }
+        query = firebaseDatabase.getReference().child("politicsPosts").orderByChild("timestamp");
 
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull @NotNull DataSnapshot snapshot, @Nullable @org.jetbrains.annotations.Nullable String previousChildName) {
+                PoliticsPost politicsPost = snapshot.getValue(PoliticsPost.class);
+                if (!keys.contains(politicsPost.getId())) {
+                    Query query1 = firebaseDatabase.getReference().child("politicsPosts").child(politicsPost.getId()).child("likes").orderByChild("id").equalTo(profileEmail);
+                    query1.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                posts.add(politicsPost);
+                                keys.add(politicsPost.getId());
+                                adapter.notifyItemInserted(posts.size() - 1);
+                            }
+                        }
 
+                        @Override
+                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                        }
+                    });
+
+                }
             }
 
             @Override
