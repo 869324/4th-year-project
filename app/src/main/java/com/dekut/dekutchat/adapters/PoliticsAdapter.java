@@ -215,13 +215,13 @@ public class PoliticsAdapter extends RecyclerView.Adapter {
 
                     tvUserName.setText(poster.getUserName());
 
-                    if(poster.getType().equals("Admin") || poster.getType().equals("leader")){
+                    if(poster.getType().equals("leader")){
                         type.setVisibility(View.VISIBLE);
-                        tvPosition.setText(poster.getType());
+                        tvPosition.setText("Student Leader");
                     }
                     else {
-                        type.setVisibility(View.INVISIBLE);
-                        tvPosition.setVisibility(View.INVISIBLE);
+                        type.setVisibility(View.GONE);
+                        tvPosition.setVisibility(View.GONE);
                     }
 
                     tvText.setText(politicsPost.getText());
@@ -442,13 +442,13 @@ public class PoliticsAdapter extends RecyclerView.Adapter {
 
                     tvUserName.setText(poster.getUserName());
 
-                    if(poster.getType().equals("Admin") || poster.getType().equals("leader")){
+                    if(poster.getType().equals("leader")){
                         type.setVisibility(View.VISIBLE);
-                        tvPosition.setText(poster.getType());
+                        tvPosition.setText("Student Leader");
                     }
                     else {
-                        type.setVisibility(View.INVISIBLE);
-                        tvPosition.setVisibility(View.INVISIBLE);
+                        type.setVisibility(View.GONE);
+                        tvPosition.setVisibility(View.GONE);
                     }
 
                     tvText.setText(politicsPost.getText());
@@ -622,13 +622,13 @@ public class PoliticsAdapter extends RecyclerView.Adapter {
 
                     tvUserName.setText(poster.getUserName());
 
-                    if(poster.getType().equals("Admin") || poster.getType().equals("leader")){
+                    if(poster.getType().equals("leader")){
                         type.setVisibility(View.VISIBLE);
-                        tvPosition.setText(poster.getType());
+                        tvPosition.setText("Student Leader");
                     }
                     else {
-                        type.setVisibility(View.INVISIBLE);
-                        tvPosition.setVisibility(View.INVISIBLE);
+                        type.setVisibility(View.GONE);
+                        tvPosition.setVisibility(View.GONE);
                     }
 
                     tvText.setText(politicsPost.getText());

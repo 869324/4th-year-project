@@ -15,7 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.DekutChat">
-        <activity android:name=".activities.SelectUser"></activity>
+        <activity android:name=".activities.StudentLeaders"></activity>
+        <activity android:name=".activities.SelectUser" />
         <activity android:name=".activities.EditGroup" />
         <activity android:name=".activities.CreatePoll" />
         <activity

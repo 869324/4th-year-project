@@ -113,7 +113,13 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent(MainActivity.this, ViewProfile.class);
                     intent.putExtra("profileEmail", email);
                     startActivity(intent);
-                } else if (id == R.id.nav_logout) {
+                }
+                else if (id == R.id.nav_leaders) {
+                    Intent intent = new Intent(MainActivity.this, StudentLeaders.class);
+                    intent.putExtra("profileEmail", email);
+                    startActivity(intent);
+                }
+                else if (id == R.id.nav_logout) {
                     FirebaseAuth.getInstance().signOut();
                     startActivity(new Intent(MainActivity.this, Login.class));
                     finish();
