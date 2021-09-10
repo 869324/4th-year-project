@@ -340,7 +340,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material/icons/materialicons/poll/baseline_poll_24.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material/icons/materialicons/person_remove/baseline_person_remove_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -351,7 +351,7 @@
                         <option name="values">
                           <map>
                             <entry key="opacityPercent" value="80" />
-                            <entry key="outputName" value="ic_poll" />
+                            <entry key="outputName" value="ic_remove" />
                             <entry key="sourceFile" value="C:\Users\javan\Downloads\wave.svg" />
                           </map>
                         </option>

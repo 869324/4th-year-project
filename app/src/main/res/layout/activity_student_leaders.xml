@@ -37,6 +37,22 @@
         app:backgroundTint="@color/almostWhite"
         android:outlineProvider="none"
         android:elevation="5dp"
+        app:layout_constraintBottom_toTopOf="@id/fabRemove"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_remove"
+        android:layout_margin="15dp"
+        android:scaleType="center"
+        app:fabSize="mini"
+        app:rippleColor="@color/textHintColor"
+        app:tint="@color/primaryColor"
+        app:backgroundTint="@color/almostWhite"
+        android:outlineProvider="none"
+        android:elevation="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
