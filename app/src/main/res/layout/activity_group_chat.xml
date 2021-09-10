@@ -41,7 +41,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_person3"
+                android:src="@drawable/ic_group"
                 android:scaleType="centerCrop"/>
 
         </androidx.cardview.widget.CardView>

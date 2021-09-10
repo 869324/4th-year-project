@@ -94,14 +94,17 @@ public class GroupChat extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         groupId = extras.getString("guid");
         name = extras.getString("name");
-        imageUrl = extras.getString("imageUrl");
+        imageUrl = extras.getString("url");
 
         fetchMessages();
 
         groupName.setText(name);
-        Glide.with(getApplicationContext())
-                .load(imageUrl)
-                .into(groupIcon);
+
+        if (imageUrl != null) {
+            Glide.with(getApplicationContext())
+                    .load(imageUrl)
+                    .into(groupIcon);
+        }
 
         Query query = firebaseDatabase.getReference().child("groups").orderByKey().equalTo(groupId);
         query.addValueEventListener(new ValueEventListener() {
@@ -161,13 +164,13 @@ public class GroupChat extends AppCompatActivity {
                 View popupView = inflater.inflate(R.layout.attach_popup, null);
                 int width = LinearLayout.LayoutParams.WRAP_CONTENT;
                 //int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-                attachPopup = new PopupWindow(popupView, width, 600, true);
+                attachPopup = new PopupWindow(popupView, width, 500, true);
                 attachPopup.setElevation(10);
                 attachPopup.showAsDropDown(btnAdd, 5, -30);
 
                 ImageButton btnCamera = popupView.findViewById(R.id.btnCamera);
                 ImageButton btnGallery = popupView.findViewById(R.id.btnGallery);
-                ImageButton btnFile = popupView.findViewById(R.id.btnFile);
+                //ImageButton btnFile = popupView.findViewById(R.id.btnFile);
                 ImageButton btnCamcorder = popupView.findViewById(R.id.btnCamcorder);
 
                 btnCamera.setOnClickListener(new View.OnClickListener() {
@@ -189,7 +192,7 @@ public class GroupChat extends AppCompatActivity {
                     }
                 });
 
-                btnFile.setOnClickListener(new View.OnClickListener() {
+                /*btnFile.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if (ContextCompat.checkSelfPermission(GroupChat.this, Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED){
@@ -199,7 +202,7 @@ public class GroupChat extends AppCompatActivity {
                             selectMedia("file");
                         }
                     }
-                });
+                });*/
 
                 btnCamcorder.setOnClickListener(new View.OnClickListener() {
                     @Override

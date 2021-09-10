@@ -201,9 +201,12 @@ public class HomeAdapter extends RecyclerView.Adapter{
             homePost.getStudent(new HomePost.SimpleCallback<Student>() {
                 @Override public void callback(Student poster) {
                     if(poster.getProfileUrl() != null) {
-                        Glide.with(itemView.getContext())
-                                .load(poster.getProfileUrl())
-                                .into(profilePic);
+
+                        if (poster.getProfileUrl() != null) {
+                            Glide.with(itemView.getContext())
+                                    .load(poster.getProfileUrl())
+                                    .into(profilePic);
+                        }
                     }
                     else {
                         Drawable drawable = DrawableCompat.wrap(AppCompatResources.getDrawable(context, R.drawable.ic_person3));

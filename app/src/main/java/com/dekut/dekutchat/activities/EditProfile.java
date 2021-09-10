@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -202,6 +203,8 @@ public class EditProfile extends AppCompatActivity {
             progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
             progressDialog.setCancelable(false);
 
+            previousUrl = student.getProfileUrl();
+
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(EditProfile.this.getContentResolver(), selectedImage);
                 long sizeKb = bitmap.getByteCount() / 1024;
@@ -318,14 +321,16 @@ public class EditProfile extends AppCompatActivity {
                 for (DataSnapshot snap : snapshot.getChildren()) {
                     student = snap.getValue(Student.class);
                     progressBar.setVisibility(View.GONE);
-                    Glide.with(getApplicationContext())
-                            .load(student.getProfileUrl())
-                            .into(profilePic);
+
+                    if (student.getProfileUrl() != null) {
+                        Glide.with(getApplicationContext())
+                                .load(student.getProfileUrl())
+                                .into(profilePic);
+                    }
                     name = student.getUserName();
                     tvUsername.setText(name);
                     tvEmail.setText(email);
                     tvReg.setText(student.getRegNo());
-                    previousUrl = student.getProfileUrl();
                     tvCourse.setText(student.getCourse());
                     key = snap.getKey();
                     break;
@@ -340,13 +345,42 @@ public class EditProfile extends AppCompatActivity {
         });
     }
     public void selectImage() {
-        final CharSequence[] options = {"Take Photo", "Choose From Gallery","Cancel"};
+        final CharSequence[] options = {"Take Photo", "Choose From Gallery", "Remove Photo","Cancel"};
         AlertDialog.Builder builder = new AlertDialog.Builder(EditProfile.this);
         builder.setTitle("Select Option");
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
-                if (options[item].equals("Take Photo")) {
+                if (options[item].equals("Remove Photo")){
+                    StorageReference reference = firebaseStorage.getReferenceFromUrl(student.getProfileUrl());
+                    Query query = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(student.getEmail());
+                    query.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                            for (DataSnapshot snap : snapshot.getChildren()){
+                                DatabaseReference reference1 = snap.getRef();
+                                reference1.child("profileUrl").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull @NotNull Task<Void> task) {
+                                        if (task.isSuccessful()){
+                                            reference.delete();
+                                            Drawable drawable = getResources().getDrawable(R.drawable.ic_person3);
+                                            profilePic.setImageDrawable(drawable);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                        }
+                    });
+
+                }
+
+                else if (options[item].equals("Take Photo")) {
                     dialog.dismiss();
                     if (ContextCompat.checkSelfPermission(EditProfile.this, Manifest.permission.CAMERA)== PackageManager.PERMISSION_DENIED){
                         ActivityCompat.requestPermissions(EditProfile.this, new String[] {Manifest.permission.CAMERA}, requestCamera);

@@ -118,15 +118,19 @@ public class ViewProfile extends AppCompatActivity {
 
     public void fetchData(){
         query = firebaseDatabase.getReference().child("students").orderByChild("email").equalTo(profileEmail);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot snap : snapshot.getChildren()) {
                     student = snap.getValue(Student.class);
                     progressBar.setVisibility(View.GONE);
-                    Glide.with(getApplicationContext())
-                            .load(student.getProfileUrl())
-                            .into(profilePic);
+
+                    if (student.getProfileUrl() != null) {
+                        Glide.with(getApplicationContext())
+                                .load(student.getProfileUrl())
+                                .into(profilePic);
+                    }
+
                     tvUsername.setText(student.getUserName());
                     tvEmail.setText(profileEmail);
                     previousUrl = student.getProfileUrl();
