@@ -120,7 +120,6 @@
         android:background="?attr/selectableItemBackground"
         android:src="@drawable/ic_send"
         android:paddingHorizontal="5dp"
-        android:rotation="-30"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/etText"
         app:layout_constraintBottom_toBottomOf="@id/etText"/>

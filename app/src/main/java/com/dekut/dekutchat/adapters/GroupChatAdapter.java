@@ -129,6 +129,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.View
                             }
                         }
                         else {
+                            holder.imageView.setVisibility(View.GONE);
                             holder.tvLastMsg.setText("You joined this group");
                             holder.tvDeliveryTime.setText("...");
                         }
