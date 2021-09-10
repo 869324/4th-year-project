@@ -13,7 +13,7 @@ public class Student {
 
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
 
-    String id, regNo, userName, course, email;
+    String id, regNo, userName, course, email, position;
     String type, profileUrl = null;
     boolean joined;
 
@@ -72,4 +72,11 @@ public class Student {
         this.profileUrl = profileUrl;
     }
 
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
 }
