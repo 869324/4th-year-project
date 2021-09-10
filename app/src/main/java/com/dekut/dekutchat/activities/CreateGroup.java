@@ -47,6 +47,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -275,74 +277,72 @@ public class CreateGroup extends AppCompatActivity {
         group.put("timestamp", ServerValue.TIMESTAMP);
         group.put("creator", email);
 
-        reference.push().setValue(group, new DatabaseReference.CompletionListener() {
+        DatabaseReference reference1 = reference.push();
+        String key = reference1 .getKey();
+        group.put("groupId", key);
+
+        reference1.setValue(group).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                String key = ref.getKey();
-                DatabaseReference reference1 = reference.child(key);
-                reference1.child("groupId").setValue(key).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if(task.isSuccessful()){
-                            Map<String, Object> map = new HashMap<>();
-                            map.put("id", email);
-                            map.put("joinedAt", ServerValue.TIMESTAMP);
-                            map.put("lastRead", 0l);
-                            reference1.child("members").child(email.replace(".", "_")).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if(task.isSuccessful()){
+            public void onComplete(@NonNull @NotNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", email);
+                    map.put("joinedAt", ServerValue.TIMESTAMP);
+                    map.put("lastRead", 0l);
+                    reference1.child("members").child(email.replace(".", "_")).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if(task.isSuccessful()){
 
-                                        DatabaseReference reference2 = reference1.child("admins").child(email.replace(".", "_"));
-                                        reference2.setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if(task.isSuccessful()){
-                                                    DatabaseReference reference2 = firebaseDatabase.getReference().child("groupConversations");
-                                                    Map<String, Object> conversation = new HashMap<>();
-                                                    conversation.put("convoId", key);
-                                                    conversation.put("lastMessageT", ServerValue.TIMESTAMP);
-                                                    reference2.child(key).setValue(conversation).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if(task.isSuccessful()){
-                                                                Toast.makeText(getApplicationContext(), "Group created", Toast.LENGTH_LONG).show();
-                                                                Intent intent = new Intent(getApplicationContext(), ViewGroup.class);
-                                                                intent.putExtra("guid", key);
-                                                                startActivity(intent);
-                                                                finish();
-                                                            }
-                                                            else{
-                                                                Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
-                                                                reference1.removeValue();
-                                                                storageReference.delete();
-                                                            }
-                                                        }
-                                                    });
+                                DatabaseReference reference2 = reference1.child("admins").child(email.replace(".", "_"));
+                                reference2.setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()){
+                                            DatabaseReference reference2 = firebaseDatabase.getReference().child("groupConversations");
+                                            Map<String, Object> conversation = new HashMap<>();
+                                            conversation.put("convoId", key);
+                                            conversation.put("lastMessageT", ServerValue.TIMESTAMP);
+                                            reference2.child(key).setValue(conversation).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if(task.isSuccessful()){
+                                                        Toast.makeText(getApplicationContext(), "Group created", Toast.LENGTH_LONG).show();
+                                                        Intent intent = new Intent(getApplicationContext(), ViewGroup.class);
+                                                        intent.putExtra("guid", key);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    }
+                                                    else{
+                                                        Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
+                                                        reference1.removeValue();
+                                                        storageReference.delete();
+                                                    }
                                                 }
-                                                else {
-                                                    Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
-                                                    reference1.removeValue();
-                                                    storageReference.delete();
-                                                }
-                                            }
-                                        });
-
-                                    }else{
-                                        Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
-                                        reference1.removeValue();
-                                        storageReference.delete();
+                                            });
+                                        }
+                                        else {
+                                            Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
+                                            reference1.removeValue();
+                                            storageReference.delete();
+                                        }
                                     }
-                                }
-                            });
+                                });
+
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
+                                reference1.removeValue();
+                                storageReference.delete();
+                            }
                         }
-                        else {
-                            Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
-                            reference1.removeValue();
-                            storageReference.delete();
-                        }
-                    }
-                });
+                    });
+                }
+
+                else {
+                    Toast.makeText(getApplicationContext(), "Failed to create group. Try Again Later", Toast.LENGTH_SHORT).show();
+                    reference1.removeValue();
+                    storageReference.delete();
+                }
 
             }
         });
