@@ -106,7 +106,7 @@ public class UserChat extends AppCompatActivity {
                     .into(profilePic);
         }
 
-        DatabaseReference connectedRef = firebaseDatabase.getReference(".info/connected");
+        /*DatabaseReference connectedRef = firebaseDatabase.getReference(".info/connected");
         connectedRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -123,7 +123,7 @@ public class UserChat extends AppCompatActivity {
             public void onCancelled(DatabaseError error) {
                 System.err.println("Listener was cancelled");
             }
-        });
+        });*/
 
         GetId getId = new GetId();
         convoId = getId.getId(senderId, receiverId);
@@ -166,13 +166,13 @@ public class UserChat extends AppCompatActivity {
                 View popupView = inflater.inflate(R.layout.attach_popup, null);
                 int width = LinearLayout.LayoutParams.WRAP_CONTENT;
                 //int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-                attachPopup = new PopupWindow(popupView, width, 600, true);
+                attachPopup = new PopupWindow(popupView, width, 500, true);
                 attachPopup.setElevation(10);
                 attachPopup.showAsDropDown(btnAdd, 5, -30);
 
                 ImageButton btnCamera = popupView.findViewById(R.id.btnCamera);
                 ImageButton btnGallery = popupView.findViewById(R.id.btnGallery);
-                ImageButton btnFile = popupView.findViewById(R.id.btnFile);
+                //ImageButton btnFile = popupView.findViewById(R.id.btnFile);
                 ImageButton btnCamcorder = popupView.findViewById(R.id.btnCamcorder);
 
                 btnCamera.setOnClickListener(new View.OnClickListener() {
@@ -194,7 +194,7 @@ public class UserChat extends AppCompatActivity {
                     }
                 });
 
-                btnFile.setOnClickListener(new View.OnClickListener() {
+                /*btnFile.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if (ContextCompat.checkSelfPermission(UserChat.this, Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_DENIED){
@@ -204,7 +204,7 @@ public class UserChat extends AppCompatActivity {
                             selectMedia("file");
                         }
                     }
-                });
+                });*/
 
                 btnCamcorder.setOnClickListener(new View.OnClickListener() {
                     @Override

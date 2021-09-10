@@ -25,8 +25,9 @@
                 android:id="@+id/profilePic"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
-                android:scaleType="center"
-                android:adjustViewBounds="true"/>
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_person3"/>
 
             <ProgressBar
                 android:id="@+id/progressBar"
