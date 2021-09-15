@@ -84,7 +84,6 @@ public class Groups extends Fragment {
     List<Conversation> conversations = new ArrayList<>();
     List<String> keys = new ArrayList<>();
     List<String> groupKeys = new ArrayList<>();
-    List<String> order = new ArrayList<>();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -254,6 +253,7 @@ public class Groups extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        refresh();
 
     }
 
@@ -400,5 +400,12 @@ public class Groups extends Fragment {
 
             }
         });
+    }
+
+    public void refresh(){
+        conversations.clear();
+        keys.clear();
+        groupChatAdapter.notifyDataSetChanged();
+        fetchChats();
     }
 }
