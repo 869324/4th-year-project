@@ -91,8 +91,10 @@ public class StudentLeaders extends AppCompatActivity {
 
                     if (student.getType().equals("admin")) {
                         fabAdd.setVisibility(View.VISIBLE);
+                        fabRemove.setVisibility(View.VISIBLE);
                     } else {
                         fabAdd.setVisibility(View.GONE);
+                        fabRemove.setVisibility(View.GONE);
                     }
                     break;
                 }

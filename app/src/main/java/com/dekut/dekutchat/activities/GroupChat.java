@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,6 +33,8 @@ import com.bumptech.glide.Glide;
 import com.dekut.dekutchat.R;
 import com.dekut.dekutchat.adapters.ConvoAdapter;
 import com.dekut.dekutchat.adapters.GroupConvoAdapter;
+import com.dekut.dekutchat.fragments.Groups;
+import com.dekut.dekutchat.fragments.Politics;
 import com.dekut.dekutchat.utils.Conversation;
 import com.dekut.dekutchat.utils.Group;
 import com.dekut.dekutchat.utils.Message;
@@ -76,6 +80,8 @@ public class GroupChat extends AppCompatActivity {
     int ACCESS_CAMERA1 = 5, ACCESS_CAMERA2 = 6, READ_STORAGE1 = 7, READ_STORAGE2 = 8, WRITE_STORAGE = 9;
     String currentPhotoPath;
     Uri selectedImage, videoUri, fileUri;
+    FragmentManager fragmentManager = getSupportFragmentManager();
+    Group group;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +118,7 @@ public class GroupChat extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(snapshot.exists()) {
                     for (DataSnapshot snap : snapshot.getChildren()) {
-                        Group group = snap.getValue(Group.class);
+                        group = snap.getValue(Group.class);
                         group.isJoined(new Group.SimpleCallback<Boolean>() {
                             @Override
                             public void callback(Boolean isJoined) {
@@ -121,6 +127,9 @@ public class GroupChat extends AppCompatActivity {
                                     etText.setVisibility(View.INVISIBLE);
                                     btnAdd.setVisibility(View.INVISIBLE);
                                     btnSend.setVisibility(View.INVISIBLE);
+
+                                    onBackPressed();
+                                    finish();
                                 }
                                 else {
                                     tvInfo.setVisibility(View.INVISIBLE);
@@ -235,6 +244,7 @@ public class GroupChat extends AppCompatActivity {
             }
         });
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
@@ -391,11 +401,6 @@ public class GroupChat extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Camera Permissions Denied", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
     }
 
     @Override
